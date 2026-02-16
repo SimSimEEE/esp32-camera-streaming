@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Camera Viewer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎥 ESP32 Camera Stream</h1>
+            <div class="status" id="status">
+                <span class="status-indicator disconnected"></span>
+                <span id="statusText">연결 대기 중...</span>
+            </div>
+        </header>
+
+        <main>
+            <div class="video-container">
+                <canvas id="videoCanvas"></canvas>
+                <div class="overlay" id="overlay">
+                    <p>WebSocket 서버에 연결 중...</p>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="connectBtn" class="btn btn-primary">연결</button>
+                <button id="disconnectBtn" class="btn btn-secondary" disabled>연결 해제</button>
+            </div>
+
+            <div class="info-panel">
+                <div class="info-item">
+                    <label>FPS:</label>
+                    <span id="fps">0</span>
+                </div>
+                <div class="info-item">
+                    <label>해상도:</label>
+                    <span id="resolution">-</span>
+                </div>
+                <div class="info-item">
+                    <label>수신 데이터:</label>
+                    <span id="dataReceived">0 KB</span>
+                </div>
+                <div class="info-item">
+                    <label>프레임 수:</label>
+                    <span id="frameCount">0</span>
+                </div>
+            </div>
+
+            <div class="log-panel">
+                <h3>연결 로그</h3>
+                <div id="logContent"></div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by Granule Core & ESP32-CAM</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
