@@ -2,7 +2,7 @@ services:
     # ESP32 Camera WebSocket Server
     camera-server:
         build:
-            context: ./esp32-camera-server
+            context: .
             dockerfile: Dockerfile
         container_name: esp32-camera-server
         ports:
