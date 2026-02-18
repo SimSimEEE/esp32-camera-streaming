@@ -17,7 +17,7 @@ FROM eclipse-temurin:17-jre
 WORKDIR /app
 
 # Copy JAR from builder
-COPY --from=builder /build/target/esp32-camera-server-1.0.0.jar app.jar
+COPY --from=builder /build/target/esp32-camera-server-1.0.1.jar app.jar
 
 # Expose WebSocket port
 EXPOSE 8887
