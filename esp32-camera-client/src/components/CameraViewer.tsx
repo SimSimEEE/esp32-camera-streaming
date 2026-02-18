@@ -273,7 +273,24 @@ export const CameraViewer = () => {
                 };
                 return;
             }
-            return; // other JSON (motion_debug etc.) – handled by MotionAlerts
+            // motion_debug: update overlay every frame using raw contour_boxes
+            if (json.type === 'motion_debug' && json.data?.contour_boxes?.length > 0) {
+                const d = json.data;
+                const prev = motionOverlayRef.current;
+                // Only update if no active motion_event overlay, or if it expired
+                if (!prev || Date.now() >= prev.expiresAt) {
+                    motionOverlayRef.current = {
+                        boxes: d.contour_boxes,
+                        changeType: 'unknown',
+                        confidence: 0,
+                        motionLevel: d.motion_level,
+                        changePercentage: d.change_percentage,
+                        frameSize: { w: d.frame_w ?? 480, h: d.frame_h ?? 320 },
+                        expiresAt: Date.now() + 800,  // short-lived: next frame will refresh
+                    };
+                }
+            }
+            return; // all JSON handled (MotionAlerts has its own listener)
         } catch {
             // not JSON, handle plain text commands below
         }

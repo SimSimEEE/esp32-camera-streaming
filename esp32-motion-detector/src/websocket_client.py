@@ -139,11 +139,18 @@ class MotionDetectionClient:
             motion_level, change_pct, diff_frame, annotated_frame, contours = self.detector.detect_motion(frame)
             
             # Send debug info every frame
+            debug_boxes = [{'x': int(cv2.boundingRect(c)[0]), 'y': int(cv2.boundingRect(c)[1]),
+                             'w': int(cv2.boundingRect(c)[2]), 'h': int(cv2.boundingRect(c)[3])}
+                            for c in contours]
             await self._send_debug_info({
                 'frame_number': self.frame_count,
                 'motion_level': motion_level,
                 'change_percentage': round(change_pct, 2),
                 'frame_size': f'{frame.shape[1]}x{frame.shape[0]}',
+                'frame_w': frame.shape[1],
+                'frame_h': frame.shape[0],
+                'contour_count': len(contours),
+                'contour_boxes': debug_boxes,
                 'timestamp': datetime.now().isoformat()
             })
             

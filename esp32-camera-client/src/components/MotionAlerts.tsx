@@ -30,6 +30,8 @@ interface DebugInfo {
     motionLevel: MotionLevel;
     changePercentage: number;
     frameSize: string;
+    contourCount: number;
+    contourBoxes: { x: number; y: number; w: number; h: number }[];
     timestamp: string;
 }
 
@@ -77,6 +79,8 @@ const MotionAlerts: React.FC<MotionAlertsProps> = ({ websocket, maxEvents = 10 }
                         motionLevel: data.data.motion_level,
                         changePercentage: data.data.change_percentage,
                         frameSize: data.data.frame_size,
+                        contourCount: data.data.contour_count ?? 0,
+                        contourBoxes: data.data.contour_boxes ?? [],
                         timestamp: data.data.timestamp,
                     });
                 }
@@ -190,6 +194,21 @@ const MotionAlerts: React.FC<MotionAlertsProps> = ({ websocket, maxEvents = 10 }
                                 </span>
                             </div>
                             <div>Change: {debugInfo.changePercentage.toFixed(2)}%</div>
+                            <div>Contours: {debugInfo.contourCount ?? 0}개</div>
+                            {debugInfo.contourBoxes && debugInfo.contourBoxes.length > 0 && (
+                                <div className="mt-2">
+                                    <div className="text-gray-400">📐 감지 좌표 (상위 3개):</div>
+                                    {debugInfo.contourBoxes.slice(0, 3).map((b, i) => (
+                                        <div key={i} className="text-xs text-cyan-300 pl-2">
+                                            [{i+1}] x={b.x} y={b.y} {b.w}×{b.h}px
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {(!debugInfo.contourBoxes || debugInfo.contourBoxes.length === 0) &&
+                             debugInfo.motionLevel !== 'none' && (
+                                <div className="text-xs text-yellow-500 mt-1">⚠️ 좌표 없음 (면적 미달)</div>
+                            )}
                             <div className="text-gray-500 text-xs mt-2">
                                 Last update:{" "}
                                 {new Date(debugInfo.timestamp).toLocaleTimeString("ko-KR")}
