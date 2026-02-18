@@ -1,0 +1,11 @@
+# Python Dependencies
+opencv-python-headless==4.9.0.80
+numpy==1.26.4
+websockets==12.0
+openai==1.12.0
+python-dotenv==1.0.1
+
+# Optional for advanced AI models
+# torch==2.2.0
+# torchvision==0.17.0
+# transformers==4.38.0

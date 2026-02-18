@@ -1,0 +1,37 @@
+{
+    "name": "esp32-motion-detector",
+    "version": "1.0.0",
+    "description": "OpenCV-based motion detection with AI analysis for ESP32 camera streaming",
+    "scripts": {
+        "!local": "------ Run locally ------",
+        "prelocal": "pip install -r requirements.txt",
+        "local": "python src/main.py",
+        "local:dev": "ENABLE_AI=false python src/main.py",
+        
+        "!docker": "------ Docker commands ------",
+        "build": "docker build -t esp32-motion-detector:latest .",
+        "start": "docker-compose up -d",
+        "stop": "docker-compose down",
+        "logs": "docker-compose logs -f motion-detector",
+        "restart": "docker-compose restart motion-detector",
+        
+        "!test": "------ Testing ------",
+        "test": "python -m pytest tests/",
+        "test:watch": "python -m pytest tests/ --watch",
+        
+        "!utils": "------ Utilities ------",
+        "clean": "rm -rf snapshots/*.jpg logs/*.log __pycache__ src/__pycache__",
+        "stats": "docker exec esp32-motion-detector python -c 'from src.main import service; import json; print(json.dumps(service.get_stats(), indent=2))'",
+        "snapshot:view": "ls -lh snapshots/"
+    },
+    "keywords": [
+        "opencv",
+        "motion-detection",
+        "ai-analysis",
+        "esp32",
+        "camera",
+        "computer-vision"
+    ],
+    "author": "Sim Si-Geun <sim@granule.io>",
+    "license": "PROPRIETARY"
+}

@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  motion-detector:
+    build: .
+    image: esp32-motion-detector:latest
+    container_name: esp32-motion-detector
+    restart: unless-stopped
+    
+    environment:
+      - WEBSOCKET_SERVER=ws://esp32-camera-server:8887
+      - ENABLE_AI=true
+      - AI_COOLDOWN=3
+      - MOTION_THRESHOLD=0.1
+      - SAVE_SNAPSHOTS=true
+      - SNAPSHOT_DIR=/app/snapshots
+      # Add your OpenAI API key here or use .env file
+      # - OPENAI_API_KEY=sk-...
+    
+    volumes:
+      - ./snapshots:/app/snapshots
+      - ./logs:/app/logs
+    
+    networks:
+      - camera-network
+    
+    depends_on:
+      - camera-server
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  camera-network:
+    external: true
+    # Create with: docker network create camera-network
