@@ -20,6 +20,15 @@ PATCH: Bug fixes, backward-compatible
 
 ## Version History
 
+### v1.10.1 (2026-02-19)
+
+**Type**: PATCH (Server)
+
+**Changes**:
+
+- Dockerfile - replace libgl1-mesa-glx with libgl1 for Debian trixie
+
+
 ### v1.10.0 (2026-02-19)
 
 **Type**: MINOR (Server)

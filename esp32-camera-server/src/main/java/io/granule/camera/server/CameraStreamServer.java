@@ -72,6 +72,12 @@ public class CameraStreamServer extends WebSocketServer {
             // Request current LED status from ESP32
             conn.send("LED_STATUS");
             _log.debug("Requested LED status from ESP32");
+        } else if (uri.startsWith("/analyzer")) {
+            connectionManager.addAnalyzerClient(conn);
+            _log.info("========================================");
+            _log.info("🎯 MOTION ANALYZER CONNECTED");
+            _log.info("Remote: {}", conn.getRemoteSocketAddress());
+            _log.info("========================================");
         } else if (uri.startsWith("/viewer")) {
             connectionManager.addWebClient(conn);
             _log.info("New web viewer connected: {}", conn.getRemoteSocketAddress());
@@ -165,6 +171,12 @@ public class CameraStreamServer extends WebSocketServer {
                 // Non-LED control messages - forward directly
                 connectionManager.broadcastToESP32(message);
             }
+        } else if (connectionManager.isAnalyzerClient(conn)) {
+            _log.info("📊 Message from analyzer: {}", message);
+            
+            // Forward analyzer messages (motion events) to all web clients
+            connectionManager.broadcastToWebClients(message);
+            _log.info("✓ Forwarded to {} web clients", connectionManager.getWebClientsCount());
         }
     }
     
@@ -180,6 +192,18 @@ public class CameraStreamServer extends WebSocketServer {
             
             // Broadcast to all web clients
             connectionManager.broadcastToWebClients(message);
+            
+            // Also broadcast to analyzers for motion detection
+            message.rewind();
+            
+            // Log frame distribution
+            if (frameRelayService.getTotalFrames() % 100 == 0) {
+                _log.info("📷 Frame #{} → {} viewers, {} analyzers", 
+                    frameRelayService.getTotalFrames(),
+                    connectionManager.getWebClientsCount(),
+                    connectionManager.getAnalyzerClientsCount());
+            }
+            connectionManager.broadcastToAnalyzers(message);
         }
     }
     

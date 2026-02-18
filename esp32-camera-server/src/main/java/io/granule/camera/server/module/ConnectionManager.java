@@ -27,6 +27,7 @@ public class ConnectionManager {
     
     private final Set<WebSocket> webClients = new CopyOnWriteArraySet<>();
     private final Set<WebSocket> esp32Clients = new CopyOnWriteArraySet<>();
+    private final Set<WebSocket> analyzerClients = new CopyOnWriteArraySet<>();
     
     /**
      * Add ESP32 client connection
@@ -45,13 +46,22 @@ public class ConnectionManager {
     }
     
     /**
+     * Add analyzer client connection
+     */
+    public final void addAnalyzerClient(final WebSocket conn) {
+        analyzerClients.add(conn);
+        _log.info("[Connection] Analyzer client added. Total: {}", analyzerClients.size());
+    }
+    
+    /**
      * Remove client connection
      */
     public final boolean removeClient(final WebSocket conn) {
         final boolean wasWebClient = webClients.remove(conn);
         esp32Clients.remove(conn);
-        _log.info("[Connection] Client removed. Remaining - ESP32: {}, Web: {}", 
-                  esp32Clients.size(), webClients.size());
+        analyzerClients.remove(conn);
+        _log.info("[Connection] Client removed. Remaining - ESP32: {}, Web: {}, Analyzer: {}", 
+                  esp32Clients.size(), webClients.size(), analyzerClients.size());
         return wasWebClient;
     }
     
@@ -70,6 +80,13 @@ public class ConnectionManager {
     }
     
     /**
+     * Check if connection is analyzer client
+     */
+    public final boolean isAnalyzerClient(final WebSocket conn) {
+        return analyzerClients.contains(conn);
+    }
+    
+    /**
      * Get web clients count
      */
     public final int getWebClientsCount() {
@@ -81,6 +98,13 @@ public class ConnectionManager {
      */
     public final int getEsp32ClientsCount() {
         return esp32Clients.size();
+    }
+    
+    /**
+     * Get analyzer clients count
+     */
+    public final int getAnalyzerClientsCount() {
+        return analyzerClients.size();
     }
     
     /**
@@ -128,5 +152,24 @@ public class ConnectionManager {
             }
         }
         _log.debug("[Connection] Broadcasted message to {} ESP32 clients: {}", esp32Clients.size(), message);
+    }
+    
+    /**
+     * Broadcast binary data to all analyzer clients
+     */
+    public final void broadcastToAnalyzers(final ByteBuffer data) {
+        final byte[] frameData = new byte[data.remaining()];
+        data.get(frameData);
+        data.rewind();
+        
+        for (final WebSocket client : analyzerClients) {
+            try {
+                client.send(frameData);
+            } catch (Exception e) {
+                _log.error("[Connection] Failed to send frame to analyzer: {}", e.getMessage());
+            }
+        }
+        
+        _log.debug("[Connection] Broadcasted frame to {} analyzers", analyzerClients.size());
     }
 }
