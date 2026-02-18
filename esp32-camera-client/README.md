@@ -43,6 +43,7 @@ npm run preview
 ## 🚀 WebSocket Protocol
 
 ### Connection
+
 - **URL**: `ws://52.79.241.244/ws/viewer`
 - **Binary Type**: `arraybuffer`
 
@@ -52,10 +53,10 @@ npm run preview
 
 1. **Binary (ArrayBuffer)**: JPEG 이미지 프레임
 2. **Text Messages**:
-   - `VIEWERS_COUNT:숫자` - 시청자 수 업데이트
-   - `VERSION_INFO:server:1.2.0,firmware:1.0.0` - 버전 정보
-   - `LED_ON` / `LED_OFF` - LED 상태 동기화
-   - `LED_STATUS:ON` / `LED_STATUS:OFF` - 현재 LED 상태
+    - `VIEWERS_COUNT:숫자` - 시청자 수 업데이트
+    - `VERSION_INFO:server:1.2.0,firmware:1.0.0` - 버전 정보
+    - `LED_ON` / `LED_OFF` - LED 상태 동기화
+    - `LED_STATUS:ON` / `LED_STATUS:OFF` - 현재 LED 상태
 
 #### 송신 메시지 (Client → Server)
 
@@ -84,21 +85,25 @@ esp32-camera-client/
 ## 🎨 Key Features Detail
 
 ### 1. Real-time Video Stream
+
 - Canvas 기반 영상 렌더링
 - ArrayBuffer → Blob → Image → Canvas 파이프라인
 - 메모리 누수 방지 (URL.revokeObjectURL)
 
 ### 2. FPS Counter
+
 - 1초마다 FPS 계산 및 업데이트
 - 최근 20개 데이터 포인트 유지
 - Recharts를 활용한 실시간 그래프 시각화
 
 ### 3. Hardware Control
+
 - WebSocket을 통한 LED 제어
 - 연결 상태에 따른 버튼 활성화/비활성화
 - 다른 사용자의 제어 명령 실시간 동기화
 
 ### 4. Auto Reconnect
+
 - 연결 끊김 감지
 - 3초 후 자동 재연결 시도
 - 무한 재시도 (setTimeout recursive)
@@ -110,7 +115,7 @@ esp32-camera-client/
 [src/components/CameraViewer.tsx](src/components/CameraViewer.tsx#L43)에서 수정:
 
 ```typescript
-const WS_URL = 'ws://your-server-ip/ws/viewer';
+const WS_URL = "ws://your-server-ip/ws/viewer";
 ```
 
 ## 📊 Performance
@@ -144,14 +149,14 @@ location /ws/ {
 ## 📜 Version History
 
 - **v1.2.0** (2026-02-18): 포트폴리오 에디션 출시
-  - React + TypeScript + Tailwind CSS로 완전 재작성
-  - 현대적인 UI/UX 적용
-  - FPS 실시간 그래프 추가
-  - Auto reconnect 기능 추가
+    - React + TypeScript + Tailwind CSS로 완전 재작성
+    - 현대적인 UI/UX 적용
+    - FPS 실시간 그래프 추가
+    - Auto reconnect 기능 추가
 
 - **v1.1.1** (2026-02-17): Legacy 버전
-  - Vanilla JavaScript 기반
-  - 기본 WebSocket 기능 구현
+    - Vanilla JavaScript 기반
+    - 기본 WebSocket 기능 구현
 
 ## 📝 License
 
@@ -160,10 +165,10 @@ Copyright (C) 2026 Granule Co Ltd. - All Rights Reserved.
 ## 👨‍💻 Author
 
 **Sim Si-Myeong** (SimSimEEE)
+
 - Email: sim@granule.io
 - GitHub: [@SimSimEEE](https://github.com/SimSimEEE)
 
 ---
 
 **Portfolio Project** | ESP32-CAM Real-time Streaming
-

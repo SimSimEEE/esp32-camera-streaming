@@ -2,7 +2,7 @@
  * `CameraViewer.tsx`
  * - ESP32-CAM real-time streaming viewer component
  *
- * @author      Sim Si-Myeong <sim@granule.io>
+ * @author      Sim Woo-Keun <smileteeth14@gmail.com>
  * @date        2026-02-18 initial version
  *
  * @copyright   (C) 2026 Granule Co Ltd. - All Rights Reserved.
@@ -47,8 +47,8 @@ export const CameraViewer = () => {
     const isConnectingRef = useRef(false);
 
     // WebSocket URL from environment variable
-    const WS_URL = `${import.meta.env.VITE_WS_URL || 'wss://esp32camera.duckdns.org'}/viewer`;
-    const DEBUG_MODE = import.meta.env.VITE_DEBUG === 'true';
+    const WS_URL = `${import.meta.env.VITE_WS_URL || "wss://esp32camera.duckdns.org"}/viewer`;
+    const DEBUG_MODE = import.meta.env.VITE_DEBUG === "true";
 
     // Initialize FPS counter
     if (fpsCounterRef.current.lastTime === 0) {
@@ -79,14 +79,16 @@ export const CameraViewer = () => {
 
     const connectWebSocket = () => {
         try {
-            console.log(`[WS] Connecting to: ${WS_URL}`);
-            console.log(`[WS] Protocol: ${isHTTPS ? 'HTTPS/WSS' : 'HTTP/WS'}`);
+            if (DEBUG_MODE) {
+                console.log(`[WS] Connecting to: ${WS_URL}`);
+                console.log(`[WS] Protocol: ${WS_URL.startsWith("wss") ? "WSS (Secure)" : "WS"}`);
+            }
             const ws = new WebSocket(WS_URL);
             ws.binaryType = "arraybuffer";
             wsRef.current = ws;
 
             ws.onopen = () => {
-                console.log(`[WS] Connected successfully to ${WS_URL}`);
+                if (DEBUG_MODE) console.log(`[WS] Connected successfully to ${WS_URL}`);
                 setWsConnected(true);
 
                 // Request LED status
@@ -111,11 +113,13 @@ export const CameraViewer = () => {
             };
 
             ws.onclose = (event) => {
-                console.log(`[WS] Disconnected - code: ${event.code}, reason: ${event.reason || 'none'}, clean: ${event.wasClean}`);
+                console.log(
+                    `[WS] Disconnected - code: ${event.code}, reason: ${event.reason || "none"}, clean: ${event.wasClean}`,
+                );
                 setWsConnected(false);
                 // Retry connection only if user wants to stay connected
                 if (isConnectingRef.current) {
-                    console.log('[WS] Retrying in 3s...');
+                    console.log("[WS] Retrying in 3s...");
                     setTimeout(() => connectWebSocket(), 3000);
                 }
             };
@@ -185,13 +189,14 @@ export const CameraViewer = () => {
             setViewerCount(count);
         } else if (message.startsWith("VERSION_INFO:")) {
             const versionData = message.substring("VERSION_INFO:".length);
-            // Parse version data (format: "server:1.2.0,firmware:1.0.0")
-            const versions = versionData.split(",");
-            versions.forEach((v) => {
-                const [key, value] = v.split(":");
-                if (key === "server") setServerVersion(value);
-                if (key === "firmware") setFirmwareVersion(value);
-            });
+            // Parse version data (format: {"server":"1.2.0","firmware":"1.0.0"})
+            try {
+                const versionObj = JSON.parse(versionData);
+                if (versionObj.server) setServerVersion(versionObj.server);
+                if (versionObj.firmware) setFirmwareVersion(versionObj.firmware);
+            } catch (e) {
+                console.error("Failed to parse version info:", e);
+            }
         } else if (message === "LED_ON") {
             setLedStatus(true);
         } else if (message === "LED_OFF") {
