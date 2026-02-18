@@ -20,6 +20,15 @@ PATCH: Bug fixes, backward-compatible
 
 ## Version History
 
+### v1.13.0 (2026-02-19)
+
+**Type**: MINOR (Server)
+
+**Changes**:
+
+- add contour coords to debug panel and live overlay every frame
+
+
 ### v1.12.0 (2026-02-19)
 
 **Type**: MINOR (Server)
