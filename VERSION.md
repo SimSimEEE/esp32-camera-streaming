@@ -15,10 +15,19 @@ PATCH: Bug fixes, backward-compatible
 ## Current Versions
 
 - **Client**: 1.0.1
-- **Server**: 1.1.1
+- **Server**: 1.2.0
 - **Firmware**: 1.0.1
 
 ## Version History
+
+### v1.2.0 (2026-02-18)
+
+**Type**: MINOR (Server)
+
+**Changes**:
+
+- add portfolio website with ESP32-CAM real-time WebSocket integration
+
 
 ### v1.1.1 (2026-02-18)
 

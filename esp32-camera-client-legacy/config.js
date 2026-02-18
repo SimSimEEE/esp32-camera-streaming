@@ -58,7 +58,7 @@ const COMMON_CONFIG = {
     // 컴포넌트 버전 (참고용)
     versions: {
         client: "1.0.1",
-        server: "1.1.1", // 서버로부터 실제 버전 수신
+        server: "1.2.0", // 서버로부터 실제 버전 수신
         firmware: "1.0.1", // 서버로부터 실제 버전 수신
     },
 };
