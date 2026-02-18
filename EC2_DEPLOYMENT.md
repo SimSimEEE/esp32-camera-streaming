@@ -16,12 +16,14 @@ chmod 400 $SSH_KEY
 ### 방법 2: SSH 키가 없는 경우
 
 **SSH 키 찾기**:
+
 ```bash
 # 일반적인 위치에서 키 찾기
 find ~ -name "*.pem" -type f 2>/dev/null | grep -E "aws|ec2"
 ```
 
 **SSH 키 다운로드** (AWS Console):
+
 1. AWS Console → EC2 → Key Pairs
 2. 기존 키 확인 또는 새 키 생성
 3. 키 파일 다운로드 → `~/.ssh/` 폴더에 저장
@@ -30,6 +32,7 @@ find ~ -name "*.pem" -type f 2>/dev/null | grep -E "aws|ec2"
 ### 방법 3: SSH Config 설정
 
 `~/.ssh/config` 파일에 추가:
+
 ```
 Host ec2-esp32
     HostName 52.79.241.244
@@ -38,6 +41,7 @@ Host ec2-esp32
 ```
 
 그 다음:
+
 ```bash
 # config 설정 후에는 키 지정 없이 실행 가능
 ./deploy-ec2.sh
@@ -50,16 +54,16 @@ Host ec2-esp32
 스크립트 실행 시 선택 가능:
 
 1. **Docker 이미지 배포** (빠름, 추천)
-   - 로컬에서 빌드된 Docker 이미지를 EC2로 전송
-   - 빠르고 안정적
+    - 로컬에서 빌드된 Docker 이미지를 EC2로 전송
+    - 빠르고 안정적
 
 2. **Git Pull + 빌드 배포** (느림)
-   - EC2에서 직접 Git Pull 후 빌드
-   - 소스 동기화 필요 시 사용
+    - EC2에서 직접 Git Pull 후 빌드
+    - 소스 동기화 필요 시 사용
 
 3. **상태 확인만**
-   - 현재 서버 상태 확인
-   - 로그 확인
+    - 현재 서버 상태 확인
+    - 로그 확인
 
 ---
 
@@ -132,6 +136,7 @@ sudo systemctl reload nginx
 **원인**: SSH 키 권한 또는 경로 문제
 
 **해결**:
+
 ```bash
 # 키 권한 확인
 ls -l ~/.ssh/*.pem
@@ -148,6 +153,7 @@ ssh -i ~/.ssh/your-key.pem ec2-user@52.79.241.244 "echo OK"
 **원인**: EC2 메모리 부족
 
 **해결**:
+
 ```bash
 # 로컬에서 이미지 빌드 후 전송 (옵션 1 사용)
 ./deploy-ec2.sh
@@ -159,11 +165,12 @@ ssh -i ~/.ssh/your-key.pem ec2-user@52.79.241.244 "echo OK"
 **원인**: EC2 보안 그룹 설정
 
 **해결**:
+
 1. AWS Console → EC2 → Security Groups
 2. 인바운드 규칙 추가:
-   - HTTP (80)
-   - Custom TCP (8887)
-   - 소스: 0.0.0.0/0 (또는 특정 IP)
+    - HTTP (80)
+    - Custom TCP (8887)
+    - 소스: 0.0.0.0/0 (또는 특정 IP)
 
 ---
 
@@ -199,6 +206,7 @@ ssh -i ~/.ssh/your-key.pem ec2-user@52.79.241.244 \
 ---
 
 **준비가 되면 실행하세요**:
+
 ```bash
 ./deploy-ec2.sh
 ```

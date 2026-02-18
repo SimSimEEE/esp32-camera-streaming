@@ -1,6 +1,7 @@
 # Version Management Strategy
 
 ## Version Scheme
+
 This project follows [Semantic Versioning 2.0.0](https://semver.org/)
 
 ```
@@ -12,6 +13,7 @@ PATCH: Bug fixes, backward-compatible
 ```
 
 ## Current Versions
+
 - **Client**: 1.0.1
 - **Server**: 1.1.0
 - **Firmware**: 1.0.1
@@ -19,9 +21,11 @@ PATCH: Bug fixes, backward-compatible
 ## Version History
 
 ### v1.1.0 (2026-02-18)
+
 **Type**: MINOR (Server)
 
 **Features**:
+
 - ✅ Race Condition prevention for LED control
 - ✅ Semaphore-based LED control lock (fair, 500ms timeout)
 - ✅ Thread-safe firmware version tracking (AtomicReference)
@@ -29,19 +33,23 @@ PATCH: Bug fixes, backward-compatible
 - ✅ ReentrantLock with fairness for critical sections
 
 **Breaking Changes**:
+
 - LED control rejects concurrent requests with `LED_BUSY` message
 - Viewer count broadcasts are debounced
 
 **Technical Details**:
+
 - Added `java.util.concurrent.Semaphore` for LED control
 - Converted `firmwareVersion` from `String` to `AtomicReference<String>`
 - Added `ReentrantLock` for viewer count broadcasts
 - Debouncing interval: 100ms
 
 ### v1.0.1 (2026-02-17)
+
 **Type**: PATCH
 
 **Changes**:
+
 - Fixed Dockerfile JAR version mismatch
 - Updated WebSocket path configuration
 - Synchronized versions across all components
@@ -51,51 +59,58 @@ PATCH: Bug fixes, backward-compatible
 ## Version Update Checklist
 
 ### 📋 Pre-Update
+
 - [ ] Determine version change type (MAJOR/MINOR/PATCH)
 - [ ] Review breaking changes
 - [ ] Test locally
 - [ ] Update CHANGELOG
 
 ### 📝 Code Updates
+
 Execute in this order to prevent dependency errors:
 
 1. **Server** (if changed)
-   ```bash
-   # Update these files:
-   - esp32-camera-server/pom.xml (line 9)
-   - esp32-camera-server/src/main/java/io/granule/camera/server/config/ServerConfig.java (APP_VERSION)
-   - esp32-camera-server/package.json (version)
-   - esp32-camera-server/Dockerfile (JAR filename in COPY command)
-   ```
+
+    ```bash
+    # Update these files:
+    - esp32-camera-server/pom.xml (line 9)
+    - esp32-camera-server/src/main/java/io/granule/camera/server/config/ServerConfig.java (APP_VERSION)
+    - esp32-camera-server/package.json (version)
+    - esp32-camera-server/Dockerfile (JAR filename in COPY command)
+    ```
 
 2. **Client** (if changed)
-   ```bash
-   # Update these files:
-   - esp32-camera-client/package.json (version)
-   - esp32-camera-client/config.js (appVersion, versions.client)
-   - esp32-camera-client/config.js (versions.server - if server changed)
-   ```
+
+    ```bash
+    # Update these files:
+    - esp32-camera-client/package.json (version)
+    - esp32-camera-client/config.js (appVersion, versions.client)
+    - esp32-camera-client/config.js (versions.server - if server changed)
+    ```
 
 3. **Firmware** (if changed)
-   ```bash
-   # Update these files:
-   - esp32-camera-firmware/package.json (version)
-   - esp32-camera-firmware/src/Config.h (APP_VERSION)
-   - esp32-camera-firmware/ESP32_Camera_Stream/Config.h (APP_VERSION)
-   ```
+    ```bash
+    # Update these files:
+    - esp32-camera-firmware/package.json (version)
+    - esp32-camera-firmware/src/Config.h (APP_VERSION)
+    - esp32-camera-firmware/ESP32_Camera_Stream/Config.h (APP_VERSION)
+    ```
 
 ### ⚠️ Critical Synchronization Points
+
 - **Dockerfile COPY command** MUST match `pom.xml` version
 - **config.js versions.server** MUST match `ServerConfig.APP_VERSION`
 - **config.js versions.firmware** MUST match firmware `APP_VERSION`
 
 ### 🔧 Build & Test
+
 - [ ] Build server: `cd esp32-camera-server && mvn clean package`
 - [ ] Build Docker image: `docker-compose build camera-server`
 - [ ] Test locally: `docker-compose up`
 - [ ] Verify version display in browser
 
 ### 📤 Git Operations
+
 ```bash
 # Stage all changes
 git add -A
@@ -114,6 +129,7 @@ git push origin master
 ```
 
 ### 🚀 Deployment
+
 ```bash
 # 1. Deploy client files
 rsync -avz -e "ssh -i ~/Downloads/my-key.pem" \
@@ -140,16 +156,18 @@ ssh -i ~/Downloads/my-key.pem ec2-user@52.79.241.244 \
 ```
 
 ### 🔍 Post-Deployment Verification
+
 - [ ] Check server logs: `docker logs esp32-camera-server`
 - [ ] Open browser: http://52.79.241.244
 - [ ] Verify footer versions match expected values
 - [ ] Test functionality:
-  - [ ] Video stream
-  - [ ] LED control
-  - [ ] Viewer count
-  - [ ] Multi-user LED control (Race Condition test)
+    - [ ] Video stream
+    - [ ] LED control
+    - [ ] Viewer count
+    - [ ] Multi-user LED control (Race Condition test)
 
 ### 📱 ESP32 Firmware Upload (if firmware changed)
+
 ```bash
 cd esp32-camera-firmware
 pio run -t upload
@@ -161,41 +179,48 @@ pio device monitor
 ## Version File Locations
 
 ### Server Version Sources
-| File | Line | Variable | Purpose |
-|------|------|----------|---------|
-| `pom.xml` | 9 | `<version>` | Maven build, determines JAR filename |
-| `ServerConfig.java` | 107 | `APP_VERSION` | Runtime version display |
-| `package.json` | 3 | `"version"` | Documentation |
-| `Dockerfile` | 20 | COPY path | **CRITICAL**: Must match pom.xml |
+
+| File                | Line | Variable      | Purpose                              |
+| ------------------- | ---- | ------------- | ------------------------------------ |
+| `pom.xml`           | 9    | `<version>`   | Maven build, determines JAR filename |
+| `ServerConfig.java` | 107  | `APP_VERSION` | Runtime version display              |
+| `package.json`      | 3    | `"version"`   | Documentation                        |
+| `Dockerfile`        | 20   | COPY path     | **CRITICAL**: Must match pom.xml     |
 
 ### Client Version Sources
-| File | Line | Variable | Purpose |
-|------|------|----------|---------|
-| `package.json` | 3 | `"version"` | Documentation |
-| `config.js` | 56 | `appVersion` | App metadata |
-| `config.js` | 58-61 | `versions` | Version display in UI |
+
+| File           | Line  | Variable     | Purpose               |
+| -------------- | ----- | ------------ | --------------------- |
+| `package.json` | 3     | `"version"`  | Documentation         |
+| `config.js`    | 56    | `appVersion` | App metadata          |
+| `config.js`    | 58-61 | `versions`   | Version display in UI |
 
 ### Firmware Version Sources
-| File | Line | Variable | Purpose |
-|------|------|----------|---------|
-| `package.json` | 3 | `"version"` | Documentation |
-| `src/Config.h` | 118 | `APP_VERSION` | Build configuration |
-| `ESP32_Camera_Stream/Config.h` | 117 | `APP_VERSION` | Arduino sketch |
+
+| File                           | Line | Variable      | Purpose             |
+| ------------------------------ | ---- | ------------- | ------------------- |
+| `package.json`                 | 3    | `"version"`   | Documentation       |
+| `src/Config.h`                 | 118  | `APP_VERSION` | Build configuration |
+| `ESP32_Camera_Stream/Config.h` | 117  | `APP_VERSION` | Arduino sketch      |
 
 ---
 
 ## Common Issues & Solutions
 
 ### Issue: Docker build fails with "JAR not found"
+
 **Cause**: Dockerfile COPY references old version
 **Solution**: Update Dockerfile line 20 to match pom.xml version
 
 ### Issue: Version mismatch in browser footer
+
 **Cause**: Client config.js not updated
 **Solution**: Update `config.js` lines 58-61
 
 ### Issue: Container name conflict during deployment
-**Solution**: 
+
+**Solution**:
+
 ```bash
 docker stop esp32-camera-server
 docker rm esp32-camera-server
@@ -207,6 +232,7 @@ docker-compose up -d camera-server
 ## Versioning Best Practices
 
 ### DO ✅
+
 - Update all related files in one commit
 - Test locally before deploying
 - Use semantic commit messages
@@ -215,6 +241,7 @@ docker-compose up -d camera-server
 - Tag releases: `git tag v1.1.0 && git push --tags`
 
 ### DON'T ❌
+
 - Skip version updates in any component
 - Deploy without testing
 - Update Dockerfile without updating pom.xml
@@ -238,6 +265,7 @@ git revert HEAD
 ```
 
 Or restore specific version:
+
 ```bash
 # 1. Checkout previous version
 git checkout v1.0.1

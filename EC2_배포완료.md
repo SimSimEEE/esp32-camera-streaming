@@ -4,11 +4,11 @@
 
 ### ✅ 배포 완료 항목
 
-| 항목 | 위치 | 상태 | 접속 URL |
-|------|------|------|----------|
-| **웹 클라이언트** | EC2 (nginx) | ✅ 실행 중 | http://52.79.241.244/ |
-| **Java 서버** | EC2 (Docker) | ✅ 실행 중 | ws://52.79.241.244:8887 |
-| **ESP32 펌웨어** | 로컬 빌드 완료 | ⏳ 업로드 대기 | - |
+| 항목              | 위치           | 상태           | 접속 URL                |
+| ----------------- | -------------- | -------------- | ----------------------- |
+| **웹 클라이언트** | EC2 (nginx)    | ✅ 실행 중     | http://52.79.241.244/   |
+| **Java 서버**     | EC2 (Docker)   | ✅ 실행 중     | ws://52.79.241.244:8887 |
+| **ESP32 펌웨어**  | 로컬 빌드 완료 | ⏳ 업로드 대기 | -                       |
 
 ### 🐳 실행 중인 컨테이너
 
@@ -24,13 +24,14 @@ esp32-camera-server    Up 17 hours          0.0.0.0:8887->8887/tcp
 
 **인바운드 규칙이 다음과 같이 설정되어 있는지 확인:**
 
-| 유형 | 프로토콜 | 포트 범위 | 소스 | 설명 |
-|------|---------|----------|------|------|
-| HTTP | TCP | 80 | 0.0.0.0/0 | 웹 클라이언트 접속 |
-| Custom TCP | TCP | 8887 | 0.0.0.0/0 | WebSocket 연결 |
-| SSH | TCP | 22 | My IP | 관리용 |
+| 유형       | 프로토콜 | 포트 범위 | 소스      | 설명               |
+| ---------- | -------- | --------- | --------- | ------------------ |
+| HTTP       | TCP      | 80        | 0.0.0.0/0 | 웹 클라이언트 접속 |
+| Custom TCP | TCP      | 8887      | 0.0.0.0/0 | WebSocket 연결     |
+| SSH        | TCP      | 22        | My IP     | 관리용             |
 
 **설정 방법:**
+
 1. AWS Console → EC2 → 인스턴스 선택
 2. "보안" 탭 → "보안 그룹" 클릭
 3. "인바운드 규칙 편집" → 위 규칙 추가
@@ -38,11 +39,13 @@ esp32-camera-server    Up 17 hours          0.0.0.0:8887->8887/tcp
 ### 2️⃣ 웹 접속 테스트
 
 브라우저에서 다음 URL로 접속:
+
 ```
 http://52.79.241.244/
 ```
 
 **기대 결과:**
+
 - ESP32 Camera Viewer 페이지 표시
 - Console에서 WebSocket 연결 시도 로그 확인
 - ESP32 연결 시 영상 스트림 표시
@@ -63,6 +66,7 @@ http://52.79.241.244/
 ```
 
 **업로드 방법:**
+
 ```bash
 cd esp32-camera-firmware
 pio run --target upload
@@ -96,18 +100,21 @@ pio run --target upload
 ## 📝 서버 로그 확인
 
 ### Java 서버 로그
+
 ```bash
 ssh -i /Users/sim-ugeun/Downloads/my-key.pem ec2-user@52.79.241.244 \
   "docker logs esp32-camera-server --tail 50"
 ```
 
 **정상 동작 시:**
+
 ```
 Received frame from ESP32: 8151 bytes
 Broadcasted frame to N web clients
 ```
 
 ### nginx 로그
+
 ```bash
 ssh -i /Users/sim-ugeun/Downloads/my-key.pem ec2-user@52.79.241.244 \
   "docker logs esp32-camera-client --tail 50"
@@ -116,6 +123,7 @@ ssh -i /Users/sim-ugeun/Downloads/my-key.pem ec2-user@52.79.241.244 \
 ## 🔄 재배포 방법
 
 ### 서버 재배포
+
 ```bash
 # 최신 이미지로 업데이트
 ssh -i /Users/sim-ugeun/Downloads/my-key.pem ec2-user@52.79.241.244 \
@@ -128,6 +136,7 @@ ssh -i /Users/sim-ugeun/Downloads/my-key.pem ec2-user@52.79.241.244 \
 ```
 
 ### 클라이언트 재배포
+
 ```bash
 # nginx 재시작
 ssh -i /Users/sim-ugeun/Downloads/my-key.pem ec2-user@52.79.241.244 \
@@ -137,39 +146,45 @@ ssh -i /Users/sim-ugeun/Downloads/my-key.pem ec2-user@52.79.241.244 \
 ## 🐛 문제 해결
 
 ### 1. 웹 페이지가 로드되지 않음
+
 ```bash
 # nginx 상태 확인
 ssh -i /Users/sim-ugeun/Downloads/my-key.pem ec2-user@52.79.241.244 \
   "docker ps | grep esp32-camera-client"
-  
+
 # 로그 확인
 ssh -i /Users/sim-ugeun/Downloads/my-key.pem ec2-user@52.79.241.244 \
   "docker logs esp32-camera-client"
 ```
 
 **해결 방법:**
+
 - EC2 보안 그룹에서 포트 80 인바운드 규칙 확인
 - 인스턴스 상태 확인 (Running)
 - nginx 컨테이너 재시작
 
 ### 2. WebSocket 연결 실패
+
 ```bash
 # Java 서버 상태 확인
 ssh -i /Users/sim-ugeun/Downloads/my-key.pem ec2-user@52.79.241.244 \
   "docker ps | grep esp32-camera-server"
-  
+
 # 포트 확인
 ssh -i /Users/sim-ugeun/Downloads/my-key.pem ec2-user@52.79.241.244 \
   "netstat -tlnp | grep 8887"
 ```
 
 **해결 방법:**
+
 - EC2 보안 그룹에서 포트 8887 인바운드 규칙 확인
 - 브라우저 Console에서 WebSocket 에러 메시지 확인
 - Java 서버 로그 확인
 
 ### 3. ESP32 연결 안됨
+
 **확인 사항:**
+
 1. ESP32 WiFi 연결 확인
 2. Config.h의 서버 주소 확인
 3. EC2 보안 그룹에서 8887 포트 확인

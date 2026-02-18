@@ -14,7 +14,7 @@ services:
         networks:
             - camera-network
         healthcheck:
-            test: ["CMD", "curl", "-f", "http://localhost:8887/"]
+            test: ["CMD-SHELL", "nc -z localhost 8887 || exit 1"]
             interval: 30s
             timeout: 3s
             retries: 3
