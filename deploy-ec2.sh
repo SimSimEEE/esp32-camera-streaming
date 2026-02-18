@@ -3,7 +3,7 @@
 # `deploy-ec2.sh`
 # - EC2 서버 배포 스크립트 (52.79.241.244)
 #
-# @author      Sim Si-Geun <simsimee@lemoncloud.io>
+# @author      Sim Woo-Keun <smileteeth14@gmail.com>
 # @date        2026-02-18 initial version
 #
 # @copyright   (C) 2026 LemonCloud Co Ltd. - All Rights Reserved.

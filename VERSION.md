@@ -15,10 +15,19 @@ PATCH: Bug fixes, backward-compatible
 ## Current Versions
 
 - **Client**: 1.0.1
-- **Server**: 1.7.0
+- **Server**: 1.8.0
 - **Firmware**: 1.0.1
 
 ## Version History
+
+### v1.8.0 (2026-02-19)
+
+**Type**: MINOR (Server)
+
+**Changes**:
+
+- enhance client UI with motion alerts integration
+
 
 ### v1.7.0 (2026-02-19)
 

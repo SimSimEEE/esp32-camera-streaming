@@ -3,7 +3,7 @@
 # `quick-deploy.sh`
 # - ESP32 Camera Streaming 빠른 배포 스크립트
 #
-# @author      Sim Si-Geun <simsimee@lemoncloud.io>
+# @author      Sim Woo-Keun <smileteeth14@gmail.com>
 # @date        2026-02-18 initial version
 #
 # @copyright   (C) 2026 LemonCloud Co Ltd. - All Rights Reserved.
