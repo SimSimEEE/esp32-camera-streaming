@@ -15,10 +15,19 @@ PATCH: Bug fixes, backward-compatible
 ## Current Versions
 
 - **Client**: 1.0.1
-- **Server**: 1.2.0
+- **Server**: 1.3.0
 - **Firmware**: 1.0.1
 
 ## Version History
+
+### v1.3.0 (2026-02-18)
+
+**Type**: MINOR (Server)
+
+**Changes**:
+
+- transform esp32-camera-client to portfolio edition with React + TypeScript + Tailwind CSS
+
 
 ### v1.2.0 (2026-02-18)
 

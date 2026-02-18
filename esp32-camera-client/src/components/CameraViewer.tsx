@@ -185,53 +185,52 @@ export const CameraViewer = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
-      {/* Header */}
-      <header className="bg-gray-900/50 backdrop-blur-lg border-b border-gray-800 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Camera className="w-8 h-8 text-primary-400" />
-              <div>
-                <h1 className="text-2xl font-bold text-white">ESP32-CAM Live Stream</h1>
-                <p className="text-sm text-gray-400">Real-time WebSocket Streaming</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              {/* Viewer Count */}
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/50 border border-gray-700">
-                <Activity className="w-4 h-4 text-cyan-400" />
-                <span className="text-sm font-medium text-gray-300">
-                  시청자 {viewerCount}명
-                </span>
-              </div>
-
-              {/* Connection Status */}
-              <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${
-                wsConnected 
-                  ? 'bg-green-500/20 border border-green-500/50' 
-                  : 'bg-red-500/20 border border-red-500/50'
-              }`}>
-                {wsConnected ? (
-                  <Wifi className="w-4 h-4 text-green-400" />
-                ) : (
-                  <WifiOff className="w-4 h-4 text-red-400" />
-                )}
-                <span className={`text-sm font-medium ${
-                  wsConnected ? 'text-green-400' : 'text-red-400'
-                }`}>
-                  {wsConnected ? 'ONLINE' : 'OFFLINE'}
-                </span>
-              </div>
-            </div>
-          </div>
+    <div className="section-container bg-gradient-to-b from-gray-950 to-gray-900">
+      {/* Section Header */}
+      <div className="mb-12">
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <Camera className="w-8 h-8 text-primary-400" />
+          <h2 className="text-3xl md:text-4xl font-bold">
+            Real-time <span className="text-primary-400">IoT Monitoring</span>
+          </h2>
         </div>
-      </header>
+        <p className="text-center text-gray-400 max-w-2xl mx-auto">
+          ESP32-CAM 기반 실시간 영상 스트리밍 및 제어 시스템<br />
+          WebSocket, Race Condition 방지, 자동 버전 관리 적용
+        </p>
+      </div>
+
+      {/* Status Bar */}
+      <div className="flex items-center justify-center gap-4 mb-6">
+        {/* Viewer Count */}
+        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/50 border border-gray-700">
+          <Activity className="w-4 h-4 text-cyan-400" />
+          <span className="text-sm font-medium text-gray-300">
+            시청자 {viewerCount}명
+          </span>
+        </div>
+
+        {/* Connection Status */}
+        <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${
+          wsConnected 
+            ? 'bg-green-500/20 border border-green-500/50' 
+            : 'bg-red-500/20 border border-red-500/50'
+        }`}>
+          {wsConnected ? (
+            <Wifi className="w-4 h-4 text-green-400" />
+          ) : (
+            <WifiOff className="w-4 h-4 text-red-400" />
+          )}
+          <span className={`text-sm font-medium ${
+            wsConnected ? 'text-green-400' : 'text-red-400'
+          }`}>
+            {wsConnected ? 'ONLINE' : 'OFFLINE'}
+          </span>
+        </div>
+      </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Video Stream */}
           <div className="lg:col-span-2 space-y-6">
             {/* Canvas */}
@@ -378,7 +377,7 @@ export const CameraViewer = () => {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };

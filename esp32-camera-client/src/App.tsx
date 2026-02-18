@@ -1,6 +1,6 @@
 /**
  * `App.tsx`
- * - ESP32-CAM Client main application component
+ * - ESP32-CAM Client Portfolio application
  *
  * @author      Sim Si-Myeong <sim@granule.io>
  * @date        2026-02-18 initial version
@@ -8,10 +8,28 @@
  * @copyright   (C) 2026 Granule Co Ltd. - All Rights Reserved.
  */
 
+import { Hero } from './components/Hero';
+import { CareerTimeline } from './components/CareerTimeline';
+import { ProjectCards } from './components/ProjectCards';
 import CameraViewer from './components/CameraViewer';
+import { TechStack } from './components/TechStack';
+import { Contact } from './components/Contact';
+import { Footer } from './components/Footer';
 
 const App = () => {
-  return <CameraViewer />;
+  return (
+    <div className="min-h-screen bg-gray-950 text-gray-100">
+      <Hero />
+      <CareerTimeline />
+      <ProjectCards />
+      <section id="iot-project" className="py-20">
+        <CameraViewer />
+      </section>
+      <TechStack />
+      <Contact />
+      <Footer />
+    </div>
+  );
 };
 
 export default App;
