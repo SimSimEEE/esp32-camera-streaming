@@ -17,7 +17,7 @@ from datetime import datetime, timedelta
 import logging
 import os
 
-from types import ChangeType
+from motion_types import ChangeType
 
 # Namespace logging
 NS = '\033[95m[AI]\033[0m'  # Magenta

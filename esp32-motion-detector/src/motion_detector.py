@@ -15,7 +15,7 @@ from typing import Optional, Tuple
 from datetime import datetime
 import logging
 
-from types import MotionEvent, MotionLevel, DetectionConfig
+from motion_types import MotionEvent, MotionLevel, DetectionConfig
 
 # Namespace logging
 NS = '\033[93m[MOTION]\033[0m'  # Yellow

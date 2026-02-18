@@ -19,7 +19,7 @@ from datetime import datetime
 import logging
 import base64
 
-from types import MotionEvent, DetectionConfig, WebSocketMessage
+from motion_types import MotionEvent, DetectionConfig, WebSocketMessage
 from motion_detector import MotionDetector
 from ai_analyzer import AIAnalyzer
 
@@ -43,6 +43,10 @@ class MotionDetectionClient:
             config: Detection configuration
             api_key: OpenAI API key for AI analysis
         """
+        # Ensure URL ends with /analyzer endpoint
+        if not server_url.endswith('/analyzer'):
+            server_url = server_url.rstrip('/') + '/analyzer'
+        
         _log.info(f'{NS} MotionDetectionClient({server_url})...')
         self.server_url = server_url
         self.config = config
@@ -134,6 +138,15 @@ class MotionDetectionClient:
             # Detect motion
             motion_level, change_pct, diff_frame = self.detector.detect_motion(frame)
             
+            # Send debug info every frame
+            await self._send_debug_info({
+                'frame_number': self.frame_count,
+                'motion_level': motion_level,
+                'change_percentage': round(change_pct, 2),
+                'frame_size': f'{frame.shape[1]}x{frame.shape[0]}',
+                'timestamp': datetime.now().isoformat()
+            })
+            
             # Only analyze if significant motion detected
             if motion_level not in ['none', 'low'] and self.config.enable_ai_analysis:
                 change_type, description, confidence = self.analyzer.analyze_change(frame, diff_frame)
@@ -206,6 +219,19 @@ class MotionDetectionClient:
         await self._send_message({
             'type': 'motion_event',
             'data': event_data,
+            'timestamp': datetime.now().isoformat()
+        })
+    
+    async def _send_debug_info(self, debug_data: dict) -> None:
+        """
+        Send debug information to server
+        
+        Args:
+            debug_data: Debug information
+        """
+        await self._send_message({
+            'type': 'motion_debug',
+            'data': debug_data,
             'timestamp': datetime.now().isoformat()
         })
     

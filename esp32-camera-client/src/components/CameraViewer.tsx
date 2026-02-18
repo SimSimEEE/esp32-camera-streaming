@@ -19,6 +19,7 @@ import {
     Tooltip,
     ResponsiveContainer,
 } from "recharts";
+import MotionAlerts from "./MotionAlerts";
 
 interface SensorData {
     time: string;
@@ -446,6 +447,11 @@ export const CameraViewer = () => {
                         </p>
                     </div>
                 </div>
+            </div>
+
+            {/* Motion Detection Alerts */}
+            <div className="mt-6">
+                <MotionAlerts websocket={wsRef.current} maxEvents={15} />
             </div>
         </div>
     );

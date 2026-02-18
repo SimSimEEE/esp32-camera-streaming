@@ -16,7 +16,7 @@ import signal
 import sys
 from typing import Optional
 
-from types import DetectionConfig
+from motion_types import DetectionConfig
 from websocket_client import MotionDetectionClient
 
 # Configure logging

@@ -6,6 +6,9 @@
 2. [로컬 Docker 테스트](#로컬-docker-테스트)
 3. [배포 전략 가이드](#배포-전략-가이드)
 4. [AWS 클라우드 배포](#aws-클라우드-배포)
+    - [A. Camera Server (App Runner)](#a-서버-배포-aws-app-runner)
+    - [B. Motion Detector (App Runner)](#b-motion-detector-배포-aws-app-runner)
+    - [C. Web Client (S3 + CloudFront)](#c-클라이언트-배포-s3--cloudfront)
 5. [ESP32 펌웨어 업데이트](#esp32-펌웨어-업데이트)
 6. [모니터링 및 운영](#모니터링-및-운영)
 
@@ -17,20 +20,35 @@
 ┌─────────────┐         WebSocket (wss://)         ┌──────────────────┐
 │  ESP32-CAM  │ ────────────────────────────────> │  Camera Server   │
 └─────────────┘                                    │  (AWS App Runner)│
-                                                   └──────────────────┘
+                                                   └─────────┬────────┘
                                                             │
-                                                            │ WebSocket
-                                                            ▼
-┌─────────────┐         HTTPS                      ┌──────────────────┐
-│ Web Client  │ <─────────────────────────────────>│   Static Site    │
-│  (Browser)  │                                    │ (S3 + CloudFront)│
-└─────────────┘                                    └──────────────────┘
+                                     ┌──────────────────────┼──────────────────┐
+                                     │                      │                  │
+                                     │ WebSocket            │ WebSocket        │
+                                     ▼                      ▼                  ▼
+                            ┌──────────────────┐   ┌─────────────────┐ ┌─────────────┐
+                            │  Motion Detector │   │   Static Site   │ │ Web Client  │
+                            │  (AWS App Runner)│   │ (S3 + CloudFront)│ │  (Browser)  │
+                            └──────────────────┘   └─────────────────┘ └─────────────┘
+                                     │                                         ▲
+                                     │          Motion Events (WebSocket)      │
+                                     └─────────────────────────────────────────┘
 ```
 
 ### 구성 요소
 
 - **Camera Server**: Java 17 기반 WebSocket 서버 (port 8887)
-- **Web Client**: 정적 HTML/JS/CSS 파일
+    - ESP32로부터 프레임 수신 (/esp32 엔드포인트)
+    - 웹 클라이언트에게 스트리밍 (/viewer 엔드포인트)
+    - Motion Detector에게 프레임 브로드캐스트 (/analyzer 엔드포인트)
+- **Motion Detector**: Python OpenCV 기반 모션 감지 서비스
+    - 카메라 서버로부터 프레임 수신
+    - OpenCV로 모션 감지 분석
+    - AI 기반 객체 분류 (사람/물체/조명 변화)
+    - 감지된 이벤트를 웹 클라이언트에게 전송
+- **Web Client**: React/TypeScript 정적 웹 앱
+    - 실시간 카메라 스트리밍 표시
+    - 모션 감지 알림 및 디버그 정보 표시
 - **ESP32-CAM**: 카메라 모듈 (15 FPS HVGA)
 
 ---
@@ -95,6 +113,7 @@ docker compose up -d
 ```
 
 **특징:**
+
 - **목적**: 빠른 개발 및 테스트
 - **구조**: 하나의 Docker 네트워크에서 함께 실행
 - **사용 시점**: 로컬 개발, 통합 테스트
@@ -103,6 +122,7 @@ docker compose up -d
 #### 2️⃣ 클라우드 배포 (독립 인스턴스)
 
 **서버 배포** (동적 서비스):
+
 ```bash
 # AWS App Runner 또는 EC2
 cd esp32-camera-server
@@ -114,11 +134,25 @@ npm run deploy  # → App Runner/ECR 배포
 - **비용 모델**: vCPU/메모리 기반 ($12-20/월)
 - **확장**: Auto Scaling 설정 가능
 
+**Motion Detector 배포** (동적 서비스):
+
+```bash
+# AWS App Runner
+cd esp32-motion-detector
+./deploy-ecr.sh  # → ECR 배포
+```
+
+- **인프라**: AWS App Runner / EC2 / ECS
+- **이유**: OpenCV 프레임 분석은 **상시 실행** 필요
+- **비용 모델**: vCPU/메모리 기반 ($8-12/월)
+- **확장**: Auto Scaling 설정 가능
+
 **클라이언트 배포** (정적 파일):
+
 ```bash
 # S3 + CloudFront (CDN)
-cd esp32-camera-client  
-npm run deploy  # → S3 sync
+cd esp32-camera-client
+npm run build && aws s3 sync dist/ s3://bucket-name
 ```
 
 - **인프라**: S3 + CloudFront (또는 Vercel/Netlify)
@@ -128,41 +162,45 @@ npm run deploy  # → S3 sync
 
 ### 왜 서버와 클라이언트를 분리하는가?
 
-| 구분 | 서버 (Camera Server) | 클라이언트 (Web Client) |
-|------|---------------------|------------------------|
-| **타입** | 동적 서비스 (WebSocket) | 정적 파일 (HTML/JS/CSS) |
-| **실행** | 상시 실행 필요 | 요청 시에만 제공 |
-| **인프라** | App Runner / EC2 / ECS | S3 / CloudFront / CDN |
-| **확장** | 수동/자동 스케일링 | CDN 자동 확장 |
-| **비용** | 인스턴스 상시 요금 | 사용량 기반 요금 |
-| **배포** | Docker 이미지 빌드 | 파일 업로드만 |
-| **변경** | 재빌드 + 재배포 필요 | 파일만 교체 |
+| 구분       | 서버 (Camera Server)    | Motion Detector        | 클라이언트 (Web Client) |
+| ---------- | ----------------------- | ---------------------- | ----------------------- |
+| **타입**   | 동적 서비스 (WebSocket) | 동적 서비스 (Python)   | 정적 파일 (HTML/JS/CSS) |
+| **실행**   | 상시 실행 필요          | 상시 실행 필요         | 요청 시에만 제공        |
+| **인프라** | App Runner / EC2 / ECS  | App Runner / EC2 / ECS | S3 / CloudFront / CDN   |
+| **확장**   | 수동/자동 스케일링      | 수동/자동 스케일링     | CDN 자동 확장           |
+| **비용**   | 인스턴스 상시 요금      | 인스턴스 상시 요금     | 사용량 기반 요금        |
+| **배포**   | Docker 이미지 빌드      | Docker 이미지 빌드     | 파일 업로드만           |
+| **변경**   | 재빌드 + 재배포 필요    | 재빌드 + 재배포 필요   | 파일만 교체             |
 
 ### 비용 비교
 
 #### ✅ 분리 배포 (권장)
 
-| 서비스 | 인프라 | 월 비용 |
-|--------|--------|--------|
-| Camera Server | AWS App Runner (1 vCPU, 2GB) | $15 |
-| Web Client | S3 + CloudFront | $2 |
-| ECR (Docker 이미지) | 1GB 저장 | $0.10 |
-| **총계** | | **$17/월** |
+| 서비스              | 인프라                         | 월 비용    |
+| ------------------- | ------------------------------ | ---------- |
+| Camera Server       | AWS App Runner (1 vCPU, 2GB)   | $15        |
+| Motion Detector     | AWS App Runner (0.5 vCPU, 1GB) | $10        |
+| Web Client          | S3 + CloudFront                | $2         |
+| ECR (Docker 이미지) | 2GB 저장 (서버 + 감지)         | $0.20      |
+| **총계**            |                                | **$27/월** |
 
 **장점:**
+
 - ✅ 클라이언트는 전 세계 CDN으로 빠른 속도
-- ✅ 서버만 독립적으로 스케일링 가능
-- ✅ 클라이언트 수정 시 서버 재배포 불필요
+- ✅ 서버/감지기 독립적으로 스케일링 가능
+- ✅ 각 서비스 독립 업데이트 (서버/감지/클라이언트)
+- ✅ Motion Detector 장애 시에도 스트리밍 정상 동작
 - ✅ 비용 효율적 (정적 파일은 CDN 캐싱)
 
 #### ❌ 통합 배포 (비권장)
 
-| 서비스 | 인프라 | 월 비용 |
-|--------|--------|--------|
-| Server + Nginx | EC2 t3.small (2 vCPU, 2GB) | $20-30 |
-| **총계** | | **$20-30/월** |
+| 서비스         | 인프라                     | 월 비용       |
+| -------------- | -------------------------- | ------------- |
+| Server + Nginx | EC2 t3.small (2 vCPU, 2GB) | $20-30        |
+| **총계**       |                            | **$20-30/월** |
 
 **단점:**
+
 - ❌ 클라이언트도 서버 인스턴스에서 제공 (비효율)
 - ❌ CDN 없음 → 느린 글로벌 접속 속도
 - ❌ 서버 재시작 시 클라이언트도 중단
@@ -174,41 +212,72 @@ npm run deploy  # → S3 sync
 ┌─────────────┐
 │  ESP32-CAM  │
 └──────┬──────┘
-       │ wss://
+       │ wss://server/esp32
        ▼
 ┌─────────────────────┐
 │  Camera Server      │ ← 독립 배포 (App Runner)
-│  ws://server/esp32  │    • WebSocket 서버 상시 실행
+│  Port 8887          │    • WebSocket 서버 상시 실행
 └──────┬──────────────┘    • Auto Scaling 가능
        │                   • $15/월
-       │ wss://
-       ▼
-┌─────────────────────┐
-│   Web Client        │ ← 독립 배포 (S3 + CloudFront)
-│  HTML/JS/CSS        │    • CDN으로 전 세계 배포
-└─────────────────────┘    • 무제한 확장
-                           • $2/월
+       ├─────────────────────────┐
+       │ wss://server/analyzer   │ wss://server/viewer
+       ▼                         ▼
+┌─────────────────────┐   ┌─────────────────────┐
+│  Motion Detector    │   │   Web Client        │
+│  Python + OpenCV    │   │  HTML/JS/CSS        │
+└──────┬──────────────┘   └─────────────────────┘
+       │                         ▲
+       │   Motion Events         │
+       └─────────────────────────┘
+
+← 독립 배포 (App Runner)      ← 독립 배포 (S3 + CloudFront)
+   • OpenCV 모션 분석            • CDN으로 전 세계 배포
+   • AI 객체 분류                • 무제한 확장
+   • $10/월                      • $2/월
 ```
 
 ### 배포 워크플로우
 
+**전체 스택 배포 (원클릭):**
+
+```bash
+./deploy-full-stack.sh  # Server + Detector + Client 자동 배포
+```
+
 **서버 변경 시:**
+
 ```bash
 cd esp32-camera-server
-npm run build          # Docker 이미지 빌드
-npm run push           # ECR에 푸시
-npm run deploy         # App Runner 배포
+mvn clean package -DskipTests
+docker build -t esp32-camera-server .
+docker tag esp32-camera-server:latest $ECR_URI/esp32-camera-server:latest
+docker push $ECR_URI/esp32-camera-server:latest
+# App Runner에서 자동 재배포
+```
+
+**Motion Detector 변경 시:**
+
+```bash
+cd esp32-motion-detector
+docker build -t esp32-motion-detector .
+docker tag esp32-motion-detector:latest $ECR_URI/esp32-motion-detector:latest
+docker push $ECR_URI/esp32-motion-detector:latest
+# App Runner에서 자동 재배포
 ```
 
 **클라이언트 변경 시:**
+
 ```bash
 cd esp32-camera-client
-npm run deploy         # S3 sync
-npm run cdn:invalidate # CloudFront 캐시 무효화
+npm run build
+aws s3 sync dist/ s3://esp32-camera-viewer --delete
+aws cloudfront create-invalidation --distribution-id XXX --paths "/*"
 ```
 
 **독립적인 배포로:**
-- 서버 수정이 클라이언트에 영향 없음
+
+- 서버 수정이 감지기/클라이언트에 영향 없음
+- 감지기 장애 시에도 스트리밍 정상 동작
 - 클라이언트 수정이 서버에 영향 없음
 - 각 팀이 독립적으로 작업 가능
 
@@ -278,7 +347,99 @@ App Runner는 기본적으로 HTTPS/WSS를 지원합니다. 별도 설정 불필
 
 ---
 
-### B. 클라이언트 배포 (S3 + CloudFront)
+### B. Motion Detector 배포 (AWS App Runner)
+
+#### 1. Dockerfile 검증
+
+```bash
+cd ~/Documents/lemon/esp32-camera-streaming/esp32-motion-detector
+
+# 로컬에서 Docker 이미지 빌드 테스트
+docker build -t esp32-motion-detector .
+
+# 컨테이너 실행 테스트
+docker run -e WEBSOCKET_SERVER=ws://camera-server:8887 esp32-motion-detector
+
+# 테스트 후 정리
+docker stop $(docker ps -q --filter ancestor=esp32-motion-detector)
+```
+
+#### 2. AWS ECR에 이미지 푸시
+
+```bash
+# ECR 리포지토리 생성
+aws ecr create-repository --repository-name esp32-motion-detector --region ap-northeast-2
+
+# ECR 로그인
+aws ecr get-login-password --region ap-northeast-2 | \
+  docker login --username AWS --password-stdin YOUR_ACCOUNT_ID.dkr.ecr.ap-northeast-2.amazonaws.com
+
+# 이미지 태깅
+docker tag esp32-motion-detector:latest \
+  YOUR_ACCOUNT_ID.dkr.ecr.ap-northeast-2.amazonaws.com/esp32-motion-detector:latest
+
+# 이미지 푸시
+docker push YOUR_ACCOUNT_ID.dkr.ecr.ap-northeast-2.amazonaws.com/esp32-motion-detector:latest
+```
+
+#### 3. AWS App Runner 생성
+
+**AWS Console에서:**
+
+1. **App Runner** 서비스 접속
+2. **Create service** 클릭
+3. **Source**: Container registry → Amazon ECR
+4. **Image**: 위에서 푸시한 이미지 선택
+5. **Port**: 8080 (내부 통신용, 외부 노출 불필요)
+6. **Environment variables** (필수):
+    - `WEBSOCKET_SERVER`: wss://[camera-server-url]:443/analyzer
+    - `ENABLE_AI`: true
+    - `MOTION_THRESHOLD`: 0.1
+    - `SAVE_SNAPSHOTS`: true
+    - `AI_COOLDOWN`: 3
+    - `OPENAI_API_KEY`: sk-xxx (선택사항, AI 분석 사용 시)
+7. **CPU/Memory**: 0.5 vCPU, 1 GB (경량 설정)
+8. **Create & deploy**
+
+#### 4. 환경 변수 설정 가이드
+
+**필수 환경 변수:**
+
+| 변수명             | 값 예시                                                 | 설명                        |
+| ------------------ | ------------------------------------------------------- | --------------------------- |
+| `WEBSOCKET_SERVER` | `wss://abc123.ap-northeast-2.awsapprunner.com/analyzer` | Camera Server WebSocket URL |
+| `ENABLE_AI`        | `true`                                                  | AI 분석 활성화              |
+| `MOTION_THRESHOLD` | `0.1`                                                   | 모션 감지 임계값 (0.0-1.0)  |
+
+**선택 환경 변수:**
+
+| 변수명           | 기본값           | 설명                           |
+| ---------------- | ---------------- | ------------------------------ |
+| `SAVE_SNAPSHOTS` | `true`           | 모션 감지 시 스냅샷 저장       |
+| `SNAPSHOT_DIR`   | `/app/snapshots` | 스냅샷 저장 경로               |
+| `AI_COOLDOWN`    | `3`              | AI 분석 쿨다운 (초)            |
+| `OPENAI_API_KEY` | -                | OpenAI API 키 (고급 AI 분석용) |
+
+#### 5. 동작 확인
+
+**CloudWatch Logs에서 확인:**
+
+```bash
+aws logs tail /aws/apprunner/esp32-motion-detector --follow
+```
+
+**정상 동작 로그:**
+
+```
+[INFO] [MAIN] ESP32 Motion Detection Service v1.0.0
+[INFO] [WS] Connected successfully to ws://camera-server:8887/analyzer
+[INFO] [WS] Starting frame processing loop...
+[INFO] [MOTION] Motion detected: level=LOW, change=12.5%
+```
+
+---
+
+### C. 클라이언트 배포 (S3 + CloudFront)
 
 #### 1. config.js 업데이트
 
@@ -339,7 +500,7 @@ aws s3api put-bucket-policy --bucket esp32-camera-viewer --policy file://bucket-
 
 ---
 
-### C. 대안: Vercel/Netlify 배포 (더 간단)
+### D. 대안: Vercel/Netlify 배포 (더 간단)
 
 #### Vercel 배포
 
@@ -448,17 +609,19 @@ docker compose logs -f camera-server
 
 현재 설정 기준 월 예상 비용:
 
-| 서비스          | 사양            | 월 비용      |
-| --------------- | --------------- | ------------ |
-| App Runner      | 1 vCPU, 2GB RAM | ~$12-$20     |
-| S3 + CloudFront | 10GB 전송       | ~$1-$3       |
-| ECR             | 1GB 이미지 저장 | ~$0.10       |
-| **총계**        |                 | **~$13-$23** |
+| 서비스                       | 사양              | 월 비용      |
+| ---------------------------- | ----------------- | ------------ |
+| App Runner (Server)          | 1 vCPU, 2GB RAM   | ~$15-$20     |
+| App Runner (Motion Detector) | 0.5 vCPU, 1GB RAM | ~$8-$12      |
+| S3 + CloudFront              | 10GB 전송         | ~$1-$3       |
+| ECR                          | 2GB 이미지 저장   | ~$0.20       |
+| **총계**                     |                   | **~$24-$35** |
 
 **절감 방법:**
 
-- App Runner 대신 **Lambda + API Gateway** (서버리스, 사용량 기반)
-- CloudFront 대신 **S3 정적 웹 호스팅** (HTTP only)
+- Motion Detector를 서버와 **동일 EC2 인스턴스**에 Docker Compose로 함께 실행
+- App Runner 대신 **EC2 t3.small** 사용 (Server + Detector 실행, ~$20/월)
+- OpenAI API 키 없이 **로컈 휴리스틱** AI만 사용 (ENABLE_AI=true, OPENAI_API_KEY 미설정)
 
 ---
 
@@ -475,7 +638,41 @@ docker compose logs -f camera-server
 wsUrl: "wss://..."; // HTTPS는 wss:// 필수
 ```
 
-### 2. ESP32 연결 안 됨
+### 2. Motion Detector 연결 안 됨
+
+**증상**: 웹 클라이언트에 "⚠️ Motion Detector에서 데이터를 수신 대기 중..." 계속 표시
+
+**해결**:
+
+```bash
+# Motion Detector 로그 확인
+aws logs tail /aws/apprunner/esp32-motion-detector --follow
+
+# WEBSOCKET_SERVER 환경변수 형식 확인 (필수)
+# 올바른 형식:
+WEBSOCKET_SERVER=wss://[camera-server-apprunner-url]/analyzer
+```
+
+**주요 확인 사항:**
+
+- Camera Server URL 끝에 `/analyzer` 경로 포함 여부
+- `wss://` 프로토콜 사용 (App Runner는 HTTPS만 지원)
+- Camera Server가 먼저 실행 중인지 확인
+
+### 3. 모션 감지 민감도 조정
+
+**증상**: 모션이 너무 자주 / 드물게 감지됨
+
+**해결**: App Runner 환경변수에서 `MOTION_THRESHOLD` 조정
+
+| 값     | 설명                                |
+| ------ | ----------------------------------- |
+| `0.05` | 매우 민감 (아주 작은 움직임도 감지) |
+| `0.1`  | 기본값 (권장)                       |
+| `0.2`  | 낮은 민감도 (큰 움직임만 감지)      |
+| `0.3`  | 매우 낮은 민감도                    |
+
+### 4. ESP32 연결 안 됨
 
 **증상**: ESP32 시리얼 모니터에 "Connection failed"
 
@@ -485,7 +682,7 @@ wsUrl: "wss://..."; // HTTPS는 wss:// 필수
 - 서버 도메인 주소 정확한지 확인
 - 방화벽/보안그룹 설정 확인 (포트 443 열림)
 
-### 3. CORS 에러
+### 5. CORS 에러
 
 **증상**: 브라우저 콘솔에 "CORS policy" 에러
 
@@ -494,7 +691,7 @@ wsUrl: "wss://..."; // HTTPS는 wss:// 필수
 - S3 버킷 CORS 설정
 - CloudFront에서 `Access-Control-Allow-Origin` 헤더 추가
 
-### 4. Docker 빌드 실패
+### 6. Docker 빌드 실패
 
 **증상**: "granule-core not found"
 

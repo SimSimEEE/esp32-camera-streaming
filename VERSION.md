@@ -20,6 +20,15 @@ PATCH: Bug fixes, backward-compatible
 
 ## Version History
 
+### v1.9.0 (2026-02-19)
+
+**Type**: MINOR (Server)
+
+**Changes**:
+
+- deploy-ec2.sh Docker Compose option added (motion-detector support)
+
+
 ### v1.6.0 (2026-02-19)
 
 **Type**: MINOR (All Components)
@@ -29,67 +38,68 @@ PATCH: Bug fixes, backward-compatible
 **New Features**:
 
 #### Motion Detection System (Server 1.6.0, Client 1.1.0)
+
 - ✅ **AI-Powered Motion Detection Service**
-  - Python-based motion detection with OpenCV
-  - Real-time frame analysis with configurable sensitivity
-  - AI-powered motion reason detection using OpenAI GPT-4o
-  - Fallback to local heuristic analysis without API key
-  - Automatic snapshot capture with timestamps
-  - WebSocket integration with camera server
-  
+    - Python-based motion detection with OpenCV
+    - Real-time frame analysis with configurable sensitivity
+    - AI-powered motion reason detection using OpenAI GPT-4o
+    - Fallback to local heuristic analysis without API key
+    - Automatic snapshot capture with timestamps
+    - WebSocket integration with camera server
 - ✅ **Client Integration**
-  - MotionAlerts component for real-time notifications
-  - Motion event history display
-  - AI-generated motion reason display
-  - Responsive design with smooth animations
-  
+    - MotionAlerts component for real-time notifications
+    - Motion event history display
+    - AI-generated motion reason display
+    - Responsive design with smooth animations
 - ✅ **Deployment Automation**
-  - One-command deployment script (start-with-motion-detection.sh)
-  - Docker support with auto-build
-  - Comprehensive setup guide (MOTION_DETECTION_GUIDE.md)
+    - One-command deployment script (start-with-motion-detection.sh)
+    - Docker support with auto-build
+    - Comprehensive setup guide (MOTION_DETECTION_GUIDE.md)
 
 #### Server Enhancements (Server 1.6.0)
+
 - ✅ **Enhanced Module Architecture**
-  - Improved ConnectionManager for multi-client handling
-  - Enhanced FrameRelayService with motion detector integration
-  - Optimized ViewerStatsService for real-time monitoring
-  - Better WebSocket message routing
-  - Thread-safe operations improvements
-  
+    - Improved ConnectionManager for multi-client handling
+    - Enhanced FrameRelayService with motion detector integration
+    - Optimized ViewerStatsService for real-time monitoring
+    - Better WebSocket message routing
+    - Thread-safe operations improvements
 - ✅ **Build & Deployment**
-  - Multi-stage Docker build optimization
-  - Updated Maven dependencies
-  - Motion detector service integration
-  - Faster build and deployment scripts
+    - Multi-stage Docker build optimization
+    - Updated Maven dependencies
+    - Motion detector service integration
+    - Faster build and deployment scripts
 
 #### Firmware Improvements (Firmware 1.1.0)
+
 - ✅ **Streaming Optimization**
-  - Optimized CameraModule for better frame capture
-  - Enhanced LedModule with smoother state transitions
-  - Lower latency frame transmission
-  - Better LED feedback for motion events
-  - Improved WebSocket connection stability
-  - Enhanced error handling and recovery
+    - Optimized CameraModule for better frame capture
+    - Enhanced LedModule with smoother state transitions
+    - Lower latency frame transmission
+    - Better LED feedback for motion events
+    - Improved WebSocket connection stability
+    - Enhanced error handling and recovery
 
 #### Client UI Enhancements (Client 1.1.0)
+
 - ✅ **Portfolio Components**
-  - Improved CameraViewer with better controls
-  - Enhanced Hero, IoTDashboard, and other components
-  - Better responsive design across devices
-  - Smoother transitions and interactions
-  
+    - Improved CameraViewer with better controls
+    - Enhanced Hero, IoTDashboard, and other components
+    - Better responsive design across devices
+    - Smoother transitions and interactions
 - ✅ **Configuration**
-  - Added config.js for environment settings
-  - Development server improvements
-  - Better build configuration
+    - Added config.js for environment settings
+    - Development server improvements
+    - Better build configuration
 
 #### Documentation (All)
+
 - ✅ **Cleanup & Reorganization**
-  - Removed obsolete documentation files
-  - Removed legacy portfolio directory
-  - Updated README.md with motion detection info
-  - Updated DEPLOY_GUIDE.md with new deployment steps
-  - Consolidated version management in VERSION.md
+    - Removed obsolete documentation files
+    - Removed legacy portfolio directory
+    - Updated README.md with motion detection info
+    - Updated DEPLOY_GUIDE.md with new deployment steps
+    - Consolidated version management in VERSION.md
 
 **Technical Details**:
 
@@ -113,7 +123,6 @@ PATCH: Bug fixes, backward-compatible
 
 - Add DuckDNS setup scripts and environment variables for fixed WebSocket URL
 
-
 ### v1.4.0 (2026-02-18)
 
 **Type**: MINOR (Server)
@@ -121,7 +130,6 @@ PATCH: Bug fixes, backward-compatible
 **Changes**:
 
 - integrate full portfolio into esp32-camera-client and remove legacy version
-
 
 ### v1.3.0 (2026-02-18)
 
@@ -131,7 +139,6 @@ PATCH: Bug fixes, backward-compatible
 
 - transform esp32-camera-client to portfolio edition with React + TypeScript + Tailwind CSS
 
-
 ### v1.2.0 (2026-02-18)
 
 **Type**: MINOR (Server)
@@ -140,7 +147,6 @@ PATCH: Bug fixes, backward-compatible
 
 - add portfolio website with ESP32-CAM real-time WebSocket integration
 
-
 ### v1.1.1 (2026-02-18)
 
 **Type**: PATCH (Server)
@@ -148,16 +154,16 @@ PATCH: Bug fixes, backward-compatible
 **Bug Fixes**:
 
 - ✅ Fixed docker-compose.yml volumes path for nginx and client files
-  - Changed from `./` to `../` to reference parent directory
-  - nginx.conf: `./nginx.conf` → `../nginx.conf`
-  - esp32-camera-client: `./esp32-camera-client` → `../esp32-camera-client`
+    - Changed from `./` to `../` to reference parent directory
+    - nginx.conf: `./nginx.conf` → `../nginx.conf`
+    - esp32-camera-client: `./esp32-camera-client` → `../esp32-camera-client`
 - ✅ Disabled health check for WebSocket server
-  - Removed HTTP-based health check (returned 404)
-  - WebSocket servers don't provide HTTP endpoints
-  - Server functionality verified through actual WebSocket connections
+    - Removed HTTP-based health check (returned 404)
+    - WebSocket servers don't provide HTTP endpoints
+    - Server functionality verified through actual WebSocket connections
 - ✅ Fixed WebSocket proxy connection
-  - nginx client can now resolve `camera-server` hostname
-  - Both containers properly connected to `esp32-camera-server_camera-network`
+    - nginx client can now resolve `camera-server` hostname
+    - Both containers properly connected to `esp32-camera-server_camera-network`
 
 **Technical Details**:
 
