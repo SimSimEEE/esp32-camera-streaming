@@ -20,6 +20,15 @@ PATCH: Bug fixes, backward-compatible
 
 ## Version History
 
+### v1.10.0 (2026-02-19)
+
+**Type**: MINOR (Server)
+
+**Changes**:
+
+- motion-detector integration - docker-compose, web client, Python service
+
+
 ### v1.9.0 (2026-02-19)
 
 **Type**: MINOR (Server)
