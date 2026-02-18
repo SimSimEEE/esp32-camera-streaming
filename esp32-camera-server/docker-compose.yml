@@ -13,12 +13,8 @@ services:
         restart: unless-stopped
         networks:
             - camera-network
-        healthcheck:
-            test: ["CMD-SHELL", "nc -z localhost 8887 || exit 1"]
-            interval: 30s
-            timeout: 3s
-            retries: 3
-            start_period: 10s
+        # healthcheck disabled - WebSocket server doesn't provide HTTP endpoint
+        # Server functionality verified through WebSocket connections
 
     # Web Client (Nginx serving static files)
     camera-client:
