@@ -158,37 +158,54 @@ class AIAnalyzer:
         gray_diff = cv2.cvtColor(diff_frame, cv2.COLOR_BGR2GRAY)
         
         # --- LED / Lighting change detection (must check FIRST before person) ---
-        # 1. Global coverage: if >20% of the frame changed uniformly → lighting/LED
-        frame_area = gray_diff.shape[0] * gray_diff.shape[1]
+        frame_h, frame_w = gray_diff.shape[:2]
+        frame_area = frame_h * frame_w
         _, thresh_diff = cv2.threshold(gray_diff, 15, 255, cv2.THRESH_BINARY)
         changed_pixels = np.count_nonzero(thresh_diff)
         coverage_ratio = changed_pixels / frame_area
-        
-        if coverage_ratio > 0.20:
-            _log.info(f'{NS} > LED/Lighting change (coverage: {coverage_ratio:.2%})')
+
+        # 1. Strong global coverage: >10% of frame changed → LED/light
+        if coverage_ratio > 0.10:
+            _log.info(f'{NS} > LED/Lighting (coverage: {coverage_ratio:.2%})')
             return ('light', f'LED/조명 변화 감지 (변화 면적: {int(coverage_ratio * 100)}%)', 0.85)
-        
-        # 2. Extreme brightness detected
+
+        # 2. Medium coverage (4~10%): check if distributed across frame (LED) vs local (person)
+        #    Divide frame into 3x3 grid — LED affects 5+ cells, person affects 1-3 cells
+        if coverage_ratio > 0.04:
+            gh, gw = frame_h // 3, frame_w // 3
+            active_regions = 0
+            for gi in range(3):
+                for gj in range(3):
+                    region = thresh_diff[gi * gh:(gi + 1) * gh, gj * gw:(gj + 1) * gw]
+                    if np.count_nonzero(region) > (gh * gw * 0.03):
+                        active_regions += 1
+            _log.info(f'{NS} > Grid analysis (coverage: {coverage_ratio:.2%}, active_regions: {active_regions}/9)')
+            if active_regions >= 5:
+                return ('light', f'분산 LED/조명 변화 감지 (면적: {int(coverage_ratio * 100)}%, 분포: {active_regions}/9)', 0.80)
+
+        # 3. Extreme brightness detected
         if avg_brightness > 190 or avg_brightness < 40:
             _log.info(f'{NS} > Extreme brightness (brightness: {avg_brightness:.1f})')
             return ('light', f'조명 변화 감지 (밝기: {int(avg_brightness)})', 0.75)
-        
+
         # Find contours in diff for object/person analysis
         contours, _ = cv2.findContours(thresh_diff, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        
+
         if not contours:
             return ('unknown', '변화 감지됨 (상세 분석 불가)', 0.3)
-        
+
         # Analyze largest contour
         largest_contour = max(contours, key=cv2.contourArea)
         area = cv2.contourArea(largest_contour)
         x, y, w, h = cv2.boundingRect(largest_contour)
         aspect_ratio = w / h if h > 0 else 0
-        
+
         # Fill density: person causes dense concentrated change, LED causes scattered change
         bounding_rect_area = w * h
         fill_density = area / bounding_rect_area if bounding_rect_area > 0 else 0
-        
+
+        _log.info(f'{NS} > Contour metrics (coverage: {coverage_ratio:.2%}, area: {int(area)}, fill_density: {fill_density:.2f}, aspect: {aspect_ratio:.2f})')
+
         # Heuristic classification
         if area < 1000:
             return ('camera', '카메라 흔들림 또는 노이즈', 0.5)
