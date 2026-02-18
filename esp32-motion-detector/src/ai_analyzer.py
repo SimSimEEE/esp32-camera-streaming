@@ -143,20 +143,38 @@ class AIAnalyzer:
         
         Args:
             frame: Current frame
-            diff_frame: Difference frame
+            diff_frame: Difference frame (frame_delta converted to BGR)
             
         Returns:
             Analysis result
         """
         _log.info(f'{NS} > Analyzing with local heuristics...')
         
-        # Calculate brightness change
+        # Calculate current frame brightness
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         avg_brightness = np.mean(gray)
         
-        # Find contours in diff
+        # Convert diff frame to grayscale for analysis
         gray_diff = cv2.cvtColor(diff_frame, cv2.COLOR_BGR2GRAY)
-        contours, _ = cv2.findContours(gray_diff, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        # --- LED / Lighting change detection (must check FIRST before person) ---
+        # 1. Global coverage: if >20% of the frame changed uniformly → lighting/LED
+        frame_area = gray_diff.shape[0] * gray_diff.shape[1]
+        _, thresh_diff = cv2.threshold(gray_diff, 15, 255, cv2.THRESH_BINARY)
+        changed_pixels = np.count_nonzero(thresh_diff)
+        coverage_ratio = changed_pixels / frame_area
+        
+        if coverage_ratio > 0.20:
+            _log.info(f'{NS} > LED/Lighting change (coverage: {coverage_ratio:.2%})')
+            return ('light', f'LED/조명 변화 감지 (변화 면적: {int(coverage_ratio * 100)}%)', 0.85)
+        
+        # 2. Extreme brightness detected
+        if avg_brightness > 190 or avg_brightness < 40:
+            _log.info(f'{NS} > Extreme brightness (brightness: {avg_brightness:.1f})')
+            return ('light', f'조명 변화 감지 (밝기: {int(avg_brightness)})', 0.75)
+        
+        # Find contours in diff for object/person analysis
+        contours, _ = cv2.findContours(thresh_diff, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
         if not contours:
             return ('unknown', '변화 감지됨 (상세 분석 불가)', 0.3)
@@ -167,14 +185,16 @@ class AIAnalyzer:
         x, y, w, h = cv2.boundingRect(largest_contour)
         aspect_ratio = w / h if h > 0 else 0
         
+        # Fill density: person causes dense concentrated change, LED causes scattered change
+        bounding_rect_area = w * h
+        fill_density = area / bounding_rect_area if bounding_rect_area > 0 else 0
+        
         # Heuristic classification
-        if 0.3 < aspect_ratio < 2.5 and area > 2000:
-            # Roughly person-shaped
-            return ('person', f'사람 형태 감지 (크기: {int(area)})', 0.6)
-        elif area < 1000:
+        if area < 1000:
             return ('camera', '카메라 흔들림 또는 노이즈', 0.5)
-        elif avg_brightness > 200 or avg_brightness < 50:
-            return ('light', f'조명 변화 감지 (밝기: {int(avg_brightness)})', 0.7)
+        elif 0.3 < aspect_ratio < 3.0 and area > 2000 and fill_density > 0.55:
+            # Dense + proportionate shape = person or object
+            return ('person', f'사람/물체 형태 감지 (크기: {int(area)}, 밀도: {fill_density:.2f})', 0.6)
         else:
             return ('object', f'물체 이동 감지 (크기: {int(area)})', 0.5)
     

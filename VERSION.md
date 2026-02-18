@@ -20,6 +20,15 @@ PATCH: Bug fixes, backward-compatible
 
 ## Version History
 
+### v1.11.0 (2026-02-19)
+
+**Type**: MINOR (Server)
+
+**Changes**:
+
+- add /analyzer WebSocket endpoint for motion detector
+
+
 ### v1.10.1 (2026-02-19)
 
 **Type**: PATCH (Server)
