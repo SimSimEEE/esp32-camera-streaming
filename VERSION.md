@@ -15,10 +15,34 @@ PATCH: Bug fixes, backward-compatible
 ## Current Versions
 
 - **Client**: 1.0.1
-- **Server**: 1.1.0
+- **Server**: 1.1.1
 - **Firmware**: 1.0.1
 
 ## Version History
+
+### v1.1.1 (2026-02-18)
+
+**Type**: PATCH (Server)
+
+**Bug Fixes**:
+
+- ✅ Fixed docker-compose.yml volumes path for nginx and client files
+  - Changed from `./` to `../` to reference parent directory
+  - nginx.conf: `./nginx.conf` → `../nginx.conf`
+  - esp32-camera-client: `./esp32-camera-client` → `../esp32-camera-client`
+- ✅ Disabled health check for WebSocket server
+  - Removed HTTP-based health check (returned 404)
+  - WebSocket servers don't provide HTTP endpoints
+  - Server functionality verified through actual WebSocket connections
+- ✅ Fixed WebSocket proxy connection
+  - nginx client can now resolve `camera-server` hostname
+  - Both containers properly connected to `esp32-camera-server_camera-network`
+
+**Technical Details**:
+
+- docker-compose.yml context: Working directory is `esp32-camera-server/`
+- File locations: nginx.conf and esp32-camera-client are in parent directory
+- Network: Docker DNS resolves service names within same network
 
 ### v1.1.0 (2026-02-18)
 
