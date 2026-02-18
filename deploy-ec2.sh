@@ -111,14 +111,58 @@ print_step "SSH 연결 성공"
 # 배포 방법 선택
 echo ""
 echo "배포 방법을 선택하세요:"
-echo "  1) Docker 이미지 배포 (빠름, 추천)"
-echo "  2) Git Pull + 빌드 배포 (느림, 소스 동기화)"
-echo "  3) 상태 확인만"
+echo "  1) Docker Compose 배포 (권장 - Server + Motion Detector 함께)"
+echo "  2) Docker 이미지 직접 배포 (Camera Server만)"
+echo "  3) Git Pull + 빌드 배포 (소스 동기화)"
+echo "  4) 상태 확인만"
 echo ""
-read -p "선택 (1-3): " DEPLOY_TYPE
+read -p "선택 (1-4): " DEPLOY_TYPE
 
 case $DEPLOY_TYPE in
     1)
+        # Docker Compose 배포 (권장)
+        print_header "Docker Compose 배포 (Server + Motion Detector)"
+
+        print_step "Step 1: Git 변경사항 커밋 확인..."
+        if ! git diff-index --quiet HEAD --; then
+            print_warning "커밋되지 않은 변경사항이 있습니다."
+            read -p "계속하시겠습니까? (y/n): " CONTINUE
+            if [ "$CONTINUE" != "y" ]; then
+                echo "배포를 취소합니다."
+                exit 0
+            fi
+        fi
+
+        print_step "Step 2: Git Push..."
+        git push origin master || print_warning "Push 실패 (계속 진행)"
+
+        print_step "Step 3: EC2에서 Git Pull 및 Docker Compose 실행..."
+        $SSH_CMD $EC2_USER@$EC2_HOST << ENDSSH
+            set -e
+            cd $PROJECT_PATH
+
+            echo "=== Git Pull ==="
+            git pull origin master
+
+            echo ""
+            echo "=== Docker Compose 빌드 및 실행 ==="
+            docker-compose build --no-cache motion-detector
+            docker-compose up -d
+
+            echo ""
+            echo "=== 컨테이너 상태 ==="
+            docker-compose ps
+
+            echo ""
+            echo "=== Motion Detector 로그 (최근 20줄) ==="
+            sleep 3
+            docker logs esp32-motion-detector --tail 20
+ENDSSH
+
+        print_success "Docker Compose 배포 완료!"
+        ;;
+
+    2)
         # Docker 이미지 배포
         print_header "Docker 이미지 배포"
         
@@ -167,9 +211,9 @@ ENDSSH
         rm -f /tmp/esp32-camera-server.tar.gz
         ;;
         
-    2)
-        # Git Pull + 빌드 배포
-        print_header "Git Pull + 빌드 배포"
+    3)
+        # Git Pull + 빌드 배포 (Camera Server만)
+        print_header "Git Pull + 빌드 배포 (Camera Server)"
         
         print_step "Step 1: Git 변경사항 확인..."
         if ! git diff-index --quiet HEAD --; then
@@ -187,28 +231,17 @@ ENDSSH
         print_step "Step 3: EC2에서 Git Pull 및 빌드..."
         $SSH_CMD $EC2_USER@$EC2_HOST << ENDSSH
             cd $PROJECT_PATH
-            
-            # Git Pull
             git pull origin master
-            
-            # 서버 빌드 및 배포
             cd esp32-camera-server
-            
-            # Docker 빌드
             docker build -t esp32-camera-server:latest .
-            
-            # 기존 컨테이너 중지 및 제거
             docker stop esp32-camera-server 2>/dev/null || true
             docker rm esp32-camera-server 2>/dev/null || true
-            
-            # 새 컨테이너 실행
             docker run -d \
                 --name esp32-camera-server \
                 --restart unless-stopped \
                 -p 80:8887 \
                 -p 8887:8887 \
                 esp32-camera-server:latest
-            
             echo ""
             echo "컨테이너 상태:"
             docker ps | grep esp32-camera-server
@@ -217,25 +250,29 @@ ENDSSH
         print_step "배포 완료!"
         ;;
         
-    3)
+    4)
         # 상태 확인
         print_header "서버 상태 확인"
         
         $SSH_CMD $EC2_USER@$EC2_HOST << 'ENDSSH'
             echo "=== Docker 컨테이너 상태 ==="
-            docker ps -a | grep esp32-camera-server || echo "컨테이너 없음"
+            docker ps -a | grep -E "esp32|motion" || echo "컨테이너 없음"
             
             echo ""
             echo "=== Docker 이미지 ==="
-            docker images | grep esp32-camera-server || echo "이미지 없음"
+            docker images | grep -E "esp32|motion" || echo "이미지 없음"
             
             echo ""
             echo "=== 포트 사용 현황 ==="
             sudo netstat -tulpn | grep -E ":80|:8887" || echo "포트 사용 없음"
             
             echo ""
-            echo "=== 최근 로그 (10줄) ==="
+            echo "=== Camera Server 최근 로그 (10줄) ==="
             docker logs --tail 10 esp32-camera-server 2>/dev/null || echo "로그 없음"
+            
+            echo ""
+            echo "=== Motion Detector 최근 로그 (10줄) ==="
+            docker logs --tail 10 esp32-motion-detector 2>/dev/null || echo "Motion Detector 미실행"
 ENDSSH
         ;;
         
@@ -256,7 +293,9 @@ echo "  • HTTP:  http://52.79.241.244"
 echo "  • HTTP:  http://52.79.241.244:8887"
 echo ""
 echo "유용한 명령어:"
-echo "  • 로그 확인: ssh -i $SSH_KEY $EC2_USER@$EC2_HOST \"docker logs -f esp32-camera-server\""
-echo "  • 재시작:   ssh -i $SSH_KEY $EC2_USER@$EC2_HOST \"docker restart esp32-camera-server\""
-echo "  • 중지:     ssh -i $SSH_KEY $EC2_USER@$EC2_HOST \"docker stop esp32-camera-server\""
+echo "  • 컨테이너 상태: ssh -i $SSH_KEY $EC2_USER@$EC2_HOST \"docker compose -f $PROJECT_PATH/docker-compose.yml ps\""
+echo "  • 카메라 로그:  ssh -i $SSH_KEY $EC2_USER@$EC2_HOST \"docker logs -f esp32-camera-server\""
+echo "  • 모션 로그:    ssh -i $SSH_KEY $EC2_USER@$EC2_HOST \"docker logs -f esp32-motion-detector\""
+echo "  • 전체 재시작:  ssh -i $SSH_KEY $EC2_USER@$EC2_HOST \"cd $PROJECT_PATH && docker compose restart\""
+echo "  • 전체 중지:    ssh -i $SSH_KEY $EC2_USER@$EC2_HOST \"cd $PROJECT_PATH && docker compose down\""
 echo ""
