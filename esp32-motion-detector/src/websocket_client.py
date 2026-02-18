@@ -259,7 +259,7 @@ class MotionDetectionClient:
             'timestamp': datetime.now().isoformat()
         })
     
-def _save_snapshot(self, frame: np.ndarray, diff_frame: np.ndarray, motion_level: str, change_type: str = 'unknown') -> None:
+    def _save_snapshot(self, frame: np.ndarray, diff_frame: np.ndarray, motion_level: str, change_type: str = 'unknown') -> None:
         """
         Save snapshot of motion event
 
