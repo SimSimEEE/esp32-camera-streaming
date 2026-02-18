@@ -356,7 +356,7 @@ footer .versions {
 }
 
 footer .version-item {
-    font-family: 'Courier New', monospace;
+    font-family: "Courier New", monospace;
     background: #e9ecef;
     padding: 0.35rem 0.65rem;
     border-radius: 4px;

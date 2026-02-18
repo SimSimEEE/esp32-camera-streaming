@@ -303,15 +303,17 @@ class CameraViewer {
     updateVersionInfo = (versionData) => {
         try {
             const versions = JSON.parse(versionData);
-            
+
             if (versions.server) {
                 this.serverVersionElement.textContent = `v${versions.server}`;
             }
             if (versions.firmware) {
                 this.firmwareVersionElement.textContent = `v${versions.firmware}`;
             }
-            
-            this.addLog(`버전 정보 수신 - Server: ${versions.server}, Firmware: ${versions.firmware}`);
+
+            this.addLog(
+                `버전 정보 수신 - Server: ${versions.server}, Firmware: ${versions.firmware}`,
+            );
         } catch (error) {
             console.error("버전 정보 파싱 오류:", error);
         }

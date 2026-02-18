@@ -64,6 +64,7 @@ public class CameraStreamServer extends WebSocketServer {
             _log.debug("Requested LED status from ESP32");
         } else if (uri.startsWith("/viewer")) {
             connectionManager.addWebClient(conn);
+            _log.info("New web viewer connected: {}", conn.getRemoteSocketAddress());
             
             // Send current LED state to new viewer
             conn.send(ledStateManager.getStatus());
@@ -192,14 +193,20 @@ public class CameraStreamServer extends WebSocketServer {
      * Send version information to a specific web client
      */
     private void sendVersionInfo(final WebSocket conn) {
-        final String versionJson = String.format(
-            "{\"server\":\"%s\",\"firmware\":\"%s\"}",
-            ServerConfig.APP_VERSION,
-            firmwareVersion
-        );
-        final String message = "VERSION_INFO:" + versionJson;
-        conn.send(message);
-        _log.debug("Sent version info to client: {}", versionJson);
+        try {
+            _log.info("sendVersionInfo() called for connection: {}", conn.getRemoteSocketAddress());
+            final String versionJson = String.format(
+                "{\"server\":\"%s\",\"firmware\":\"%s\"}",
+                ServerConfig.APP_VERSION,
+                firmwareVersion
+            );
+            final String message = "VERSION_INFO:" + versionJson;
+            _log.info("Sending VERSION_INFO message: {}", message);
+            conn.send(message);
+            _log.info("Successfully sent version info to client: {}", versionJson);
+        } catch (final Exception e) {
+            _log.error("Error sending version info", e);
+        }
     }
     
     /**
@@ -213,7 +220,7 @@ public class CameraStreamServer extends WebSocketServer {
         );
         final String message = "VERSION_INFO:" + versionJson;
         connectionManager.broadcastToWebClients(message);
-        _log.debug("Broadcasted version info: {}", versionJson);
+        _log.info("Broadcasted version info: {}", versionJson);
     }
     
     /**

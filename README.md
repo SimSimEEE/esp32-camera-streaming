@@ -13,6 +13,7 @@ ESP32-CAM을 이용한 실시간 카메라 스트리밍 시스템입니다. **3�
 ```
 
 > 📘 **배포 가이드**:
+>
 > - [배포준비완료.md](배포준비완료.md) - 빠른 시작 (★ 시작은 여기서!)
 > - [DEPLOY_GUIDE.md](DEPLOY_GUIDE.md) - 상세 배포 가이드
 > - [DEPLOYMENT.md](DEPLOYMENT.md) - 클라우드 아키텍처

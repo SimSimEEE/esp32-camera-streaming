@@ -1,6 +1,6 @@
 {
     "name": "esp32-camera-firmware",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "ESP32-CAM Firmware (Arduino/PlatformIO)",
     "scripts": {
         "!build": "------ Build Firmware ------",

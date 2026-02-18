@@ -30,10 +30,10 @@ const CONFIG = {
     },
 
     // AWS 클라우드 배포 환경
-    // ⚠️ 배포 후 실제 서버 URL로 변경하세요!
+    // EC2: 52.79.241.244
     production: {
-        wsUrl: "ws://YOUR_SERVER_DOMAIN/ws/viewer", // 예: ws://xxx.awsapprunner.com/ws/viewer
-        esp32Endpoint: "ws://YOUR_SERVER_DOMAIN/ws/esp32", // 예: ws://xxx.awsapprunner.com/ws/esp32
+        wsUrl: "ws://52.79.241.244/ws/viewer",
+        esp32Endpoint: "ws://52.79.241.244/ws/esp32",
         reconnectInterval: 10000, // 프로덕션에서는 재연결 간격을 길게
         heartbeatInterval: 60000, // 프로덕션에서는 heartbeat 간격을 길게
     },
@@ -53,13 +53,13 @@ const COMMON_CONFIG = {
 
     // 앱 정보
     appName: "ESP32 Camera Viewer",
-    appVersion: "1.0.0",
-    
+    appVersion: "1.0.1",
+
     // 컴포넌트 버전 (참고용)
     versions: {
-        client: "1.0.0",
-        server: "1.0.0",  // 서버로부터 실제 버전 수신
-        firmware: "1.0.0", // 서버로부터 실제 버전 수신
+        client: "1.0.1",
+        server: "1.0.1", // 서버로부터 실제 버전 수신
+        firmware: "1.0.1", // 서버로부터 실제 버전 수신
     },
 };
 

@@ -1,18 +1,20 @@
-/**
- * `DEPLOY_GUIDE.md`
- * - ESP32 Camera Streaming 배포 가이드
- *
- * @author      Sim Si-Geun <simsimee@lemoncloud.io>
- * @date        2026-02-18 initial version
- *
- * @copyright   (C) 2026 LemonCloud Co Ltd. - All Rights Reserved.
- */
+/\*\*
+
+- `DEPLOY_GUIDE.md`
+-   - ESP32 Camera Streaming 배포 가이드
+-
+- @author Sim Si-Geun <simsimee@lemoncloud.io>
+- @date 2026-02-18 initial version
+-
+- @copyright (C) 2026 LemonCloud Co Ltd. - All Rights Reserved.
+  \*/
 
 # 🚀 ESP32 Camera Streaming 배포 가이드
 
 ## 📦 현재 배포 준비 상태
 
 ### ✅ 완료된 작업
+
 - [x] Java 서버 v1.0.0 빌드 완료
 - [x] Docker 이미지 생성 완료 (`esp32-camera-server:latest`)
 - [x] 웹 클라이언트 파일 준비 완료
@@ -42,6 +44,7 @@ npm run stop
 ```
 
 **웹 클라이언트 실행**:
+
 ```bash
 cd esp32-camera-client
 npm run dev
@@ -49,6 +52,7 @@ npm run dev
 ```
 
 **테스트 확인**:
+
 - ✅ 웹 페이지가 정상적으로 로드되는지 확인
 - ✅ WebSocket 연결이 되는지 확인 (개발자 도구 콘솔 확인)
 - ✅ 버전 정보가 표시되는지 확인 (페이지 하단)
@@ -60,6 +64,7 @@ npm run dev
 #### 사전 준비
 
 **AWS CLI 설정 확인**:
+
 ```bash
 # AWS CLI 설치 확인
 aws --version
@@ -83,6 +88,7 @@ aws configure
 ```
 
 이 스크립트는 다음 작업을 자동으로 수행합니다:
+
 1. ✅ ECR 리포지토리 생성/확인
 2. ✅ Docker 이미지 빌드 및 태깅
 3. ✅ ECR에 이미지 푸시
@@ -93,6 +99,7 @@ aws configure
 #### 수동 배포
 
 **A. 서버 배포 (ECR)**:
+
 ```bash
 cd esp32-camera-server
 
@@ -104,23 +111,26 @@ npm run push
 ```
 
 출력 예시:
+
 ```
 Image URI: 123456789.dkr.ecr.ap-northeast-2.amazonaws.com/esp32-camera-server:latest
 ```
 
 **B. App Runner 배포**:
+
 1. AWS Console → App Runner 접속
 2. "Create service" 클릭
 3. 설정:
-   - **Source**: Container registry → Amazon ECR
-   - **Image URI**: 위에서 출력된 URI 입력
-   - **Port**: 8887
-   - **CPU/Memory**: 1 vCPU, 2 GB (권장)
+    - **Source**: Container registry → Amazon ECR
+    - **Image URI**: 위에서 출력된 URI 입력
+    - **Port**: 8887
+    - **CPU/Memory**: 1 vCPU, 2 GB (권장)
 4. "Create & deploy" 클릭
 5. 배포 완료 후 서비스 URL 확인
-   - 예: `https://xxx.ap-northeast-2.awsapprunner.com`
+    - 예: `https://xxx.ap-northeast-2.awsapprunner.com`
 
 **C. 클라이언트 배포 (S3)**:
+
 ```bash
 cd esp32-camera-client
 
@@ -132,6 +142,7 @@ npm run deploy:check
 ```
 
 S3 웹사이트 URL:
+
 ```
 http://esp32-camera-viewer.s3-website-ap-northeast-2.amazonaws.com
 ```
@@ -149,6 +160,7 @@ production: {
 ```
 
 업데이트 후 재배포:
+
 ```bash
 cd esp32-camera-client
 npm run deploy
@@ -195,6 +207,7 @@ pio device monitor
 ```
 
 **ESP32 연결 확인**:
+
 ```
 WiFi connected
 IP address: 192.168.x.x
@@ -229,11 +242,13 @@ ESP32 펌웨어 설정: [esp32-camera-firmware/ESP32_Camera_Stream/Config.h](esp
 ### 1. 서버 상태 확인
 
 **로컬**:
+
 ```bash
 curl http://localhost:8887/
 ```
 
 **AWS App Runner**:
+
 ```bash
 curl https://xxx.ap-northeast-2.awsapprunner.com/
 ```
@@ -249,6 +264,7 @@ curl https://xxx.ap-northeast-2.awsapprunner.com/
 ### 3. ESP32 연결 확인
 
 ESP32 시리얼 모니터에서 다음 메시지 확인:
+
 ```
 WiFi connected
 WebSocket connected!
@@ -276,6 +292,7 @@ Streaming started...
 **증상**: 웹 페이지에서 "서버와의 연결이 끊어졌습니다" 메시지
 
 **해결**:
+
 1. 서버가 실행 중인지 확인: `docker ps | grep esp32-camera-server`
 2. 방화벽/보안 그룹에서 8887 포트 개방 확인
 3. [config.js](esp32-camera-client/config.js)의 WebSocket URL이 정확한지 확인
@@ -285,6 +302,7 @@ Streaming started...
 **증상**: ESP32가 WiFi에 연결되지 않음
 
 **해결**:
+
 1. [Config.h](esp32-camera-firmware/ESP32_Camera_Stream/Config.h)의 SSID/비밀번호 확인
 2. ESP32 근처 WiFi 신호 강도 확인
 3. 2.4GHz WiFi 사용 확인 (5GHz 불가)
@@ -294,6 +312,7 @@ Streaming started...
 **증상**: "Camera init failed" 메시지
 
 **해결**:
+
 1. ESP32-CAM 모듈 전원 재부팅
 2. PSRAM 연결 확인
 3. 카메라 모듈 케이블 연결 확인
@@ -303,6 +322,7 @@ Streaming started...
 **증상**: "Unable to locate credentials"
 
 **해결**:
+
 ```bash
 # AWS 설정 확인
 aws configure list
@@ -318,15 +338,18 @@ aws configure
 ### 로그 확인
 
 **로컬 Docker**:
+
 ```bash
 cd esp32-camera-server
 npm run logs
 ```
 
 **AWS App Runner**:
+
 - AWS Console → App Runner → 서비스 선택 → Logs 탭
 
 **ESP32**:
+
 ```bash
 cd esp32-camera-firmware
 pio device monitor

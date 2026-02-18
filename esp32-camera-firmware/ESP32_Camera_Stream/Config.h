@@ -16,8 +16,8 @@
 // WiFi Configuration
 // ⚠️ 배포 전 반드시 본인의 WiFi 정보로 변경하세요!
 // ========================================
-#define WIFI_SSID        "YOUR_WIFI_SSID"
-#define WIFI_PASSWORD    "YOUR_WIFI_PASSWORD"
+#define WIFI_SSID        "DLive_CF84"
+#define WIFI_PASSWORD    "BD0982CF83"
 
 // WiFi 연결 설정
 #define WIFI_CONNECT_TIMEOUT     20       // WiFi 연결 시도 횟수
@@ -27,7 +27,7 @@
 // WebSocket Server Configuration  
 // ⚠️ 배포 전 반드시 서버 주소로 변경하세요!
 // ========================================
-#define WS_HOST          "YOUR_SERVER_IP_OR_DOMAIN"  // 서버 IP 또는 도메인
+#define WS_HOST          "52.79.241.244"  // 서버 IP 또는 도메인
 #define WS_PORT          8887                         // 서버 포트
 #define WS_PATH          "/esp32"                     // WebSocket 경로
 
@@ -114,7 +114,7 @@
 // Application Info
 // ========================================
 #define APP_NAME          "ESP32-CAM Stream"
-#define APP_VERSION       "1.0.0"
+#define APP_VERSION       "1.0.1"
 #define APP_AUTHOR        "Granule Co Ltd"
 
 #endif // CONFIG_H
