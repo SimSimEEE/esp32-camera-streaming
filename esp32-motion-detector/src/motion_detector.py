@@ -61,7 +61,7 @@ class MotionDetector:
             if self.previous_frame is None:
                 _log.info(f'{NS} > First frame initialized')
                 self.previous_frame = blurred
-                return ('none', 0.0, None)
+                return ('none', 0.0, None, None, [])
             
             # Calculate frame difference
             frame_delta = cv2.absdiff(self.previous_frame, blurred)
@@ -80,7 +80,7 @@ class MotionDetector:
             
             # Find contours for visualization
             contours, _ = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            
+
             # Draw contours on diff frame
             diff_frame = cv2.cvtColor(frame_delta, cv2.COLOR_GRAY2BGR)
             for contour in contours:
@@ -88,18 +88,28 @@ class MotionDetector:
                     continue
                 (x, y, w, h) = cv2.boundingRect(contour)
                 cv2.rectangle(diff_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+            # Draw contours on original frame (green placeholder; caller may redraw with change_type color)
+            annotated_frame = frame.copy()
+            for contour in contours:
+                if cv2.contourArea(contour) < self.config.min_contour_area:
+                    continue
+                (x, y, w, h) = cv2.boundingRect(contour)
+                cv2.rectangle(annotated_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
             
             # Update previous frame
             self.previous_frame = blurred
-            
+
             if motion_level != 'none':
                 _log.info(f'{NS} > Motion detected: {motion_level} ({change_percentage:.2f}%)')
-            
-            return (motion_level, change_percentage, diff_frame)
+
+            # Return contours along with frames so caller can redraw with change_type color
+            valid_contours = [c for c in contours if cv2.contourArea(c) >= self.config.min_contour_area]
+            return (motion_level, change_percentage, diff_frame, annotated_frame, valid_contours)
             
         except Exception as e:
             _log.error(f'{NS} ! detect_motion() error: {e}')
-            return ('none', 0.0, None)
+            return ('none', 0.0, None, None, [])
     
     def _calculate_motion_level(self, change_percentage: float) -> MotionLevel:
         """

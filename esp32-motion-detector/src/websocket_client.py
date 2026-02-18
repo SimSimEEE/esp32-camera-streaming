@@ -136,7 +136,7 @@ class MotionDetectionClient:
                 return
             
             # Detect motion
-            motion_level, change_pct, diff_frame = self.detector.detect_motion(frame)
+            motion_level, change_pct, diff_frame, annotated_frame, contours = self.detector.detect_motion(frame)
             
             # Send debug info every frame
             await self._send_debug_info({
@@ -150,6 +150,30 @@ class MotionDetectionClient:
             # Only analyze if significant motion detected
             if motion_level not in ['none', 'low'] and self.config.enable_ai_analysis:
                 change_type, description, confidence = self.analyzer.analyze_change(frame, diff_frame)
+
+                # Redraw contours on annotated_frame with change_type-specific color
+                COLOR_MAP = {
+                    'person': (0, 0, 255),    # Red
+                    'light':  (0, 255, 255),  # Yellow
+                    'object': (255, 165, 0),  # Orange
+                    'camera': (255, 0, 255),  # Magenta
+                    'unknown': (128, 128, 128),  # Gray
+                }
+                border_color = COLOR_MAP.get(change_type, (0, 255, 0))
+                labeled_frame = frame.copy()
+                for contour in contours:
+                    (cx, cy, cw, ch) = cv2.boundingRect(contour)
+                    cv2.rectangle(labeled_frame, (cx, cy), (cx + cw, cy + ch), border_color, 2)
+                # Draw label on top-left corner
+                label_text = f'{change_type.upper()} ({int(confidence * 100)}%)'
+                (tw, th), _ = cv2.getTextSize(label_text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
+                cv2.rectangle(labeled_frame, (8, 8), (8 + tw + 8, 8 + th + 10), border_color, -1)
+                cv2.putText(labeled_frame, label_text, (12, 8 + th + 2),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                # Motion level badge
+                level_text = f'{motion_level} {change_pct:.1f}%'
+                cv2.putText(labeled_frame, level_text, (12, labeled_frame.shape[0] - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, border_color, 1)
                 
                 # Send analysis result to server
                 await self._send_motion_event({
@@ -164,7 +188,7 @@ class MotionDetectionClient:
                 
                 # Save snapshot if enabled
                 if self.config.save_snapshots:
-                    self._save_snapshot(frame, diff_frame, motion_level)
+                    self._save_snapshot(labeled_frame, diff_frame, motion_level, change_type)
                     
         except Exception as e:
             _log.error(f'{NS} ! _process_frame() error: {e}')
@@ -235,23 +259,24 @@ class MotionDetectionClient:
             'timestamp': datetime.now().isoformat()
         })
     
-    def _save_snapshot(self, frame: np.ndarray, diff_frame: np.ndarray, motion_level: str) -> None:
+def _save_snapshot(self, frame: np.ndarray, diff_frame: np.ndarray, motion_level: str, change_type: str = 'unknown') -> None:
         """
         Save snapshot of motion event
-        
+
         Args:
-            frame: Original frame
+            frame: Annotated frame with bounding boxes (or original if no annotation)
             diff_frame: Difference frame
             motion_level: Motion level classification
+            change_type: AI-classified change type (person/light/object/camera/unknown)
         """
         try:
             import os
             os.makedirs(self.config.snapshot_dir, exist_ok=True)
-            
+
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            filename = f'{self.config.snapshot_dir}/motion_{timestamp}_{motion_level}.jpg'
-            
-            # Combine original and diff side-by-side
+            filename = f'{self.config.snapshot_dir}/motion_{timestamp}_{motion_level}_{change_type}.jpg'
+
+            # Combine annotated original and diff side-by-side
             combined = np.hstack([frame, diff_frame])
             cv2.imwrite(filename, combined)
             
