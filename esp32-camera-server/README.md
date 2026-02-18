@@ -28,16 +28,41 @@ mvn clean package
 
 ## 🚀 실행
 
+### 환경 변수 설정 (선택사항)
+
+서버는 `ServerConfig.java`에서 설정을 관리합니다. 환경 변수로 오버라이드 가능합니다:
+
+```bash
+# 서버 포트 변경
+export SERVER_PORT=9000
+
+# 환경 설정 (production/development)
+export ENV=production
+
+# 서버 실행
+java -jar target/esp32-camera-server-1.0.0.jar
+```
+
+**주요 설정값** (src/main/java/io/granule/camera/server/config/ServerConfig.java):
+
+```java
+DEFAULT_PORT = 8887              // 기본 포트
+ENDPOINT_ESP32 = "/esp32"        // ESP32 엔드포인트
+ENDPOINT_VIEWER = "/viewer"      // 웹 뷰어 엔드포인트
+MAX_FRAME_SIZE = 1MB             // 최대 프레임 크기
+CONNECTION_TIMEOUT = 30초        // 연결 타임아웃
+```
+
 ### Maven을 통한 실행
 
 ```bash
-mvn exec:java -Dexec.mainClass="io.lemoncloud.camera.server.CameraStreamServer"
+mvn exec:java -Dexec.mainClass="io.granule.camera.server.CameraStreamServer"
 ```
 
 다른 포트 사용 (기본값: 8887):
 
 ```bash
-mvn exec:java -Dexec.mainClass="io.lemoncloud.camera.server.CameraStreamServer" -Dexec.args="9000"
+mvn exec:java -Dexec.mainClass="io.granule.camera.server.CameraStreamServer" -Dexec.args="9000"
 ```
 
 ### JAR 파일로 실행
@@ -57,10 +82,9 @@ java -jar target/esp32-camera-server-1.0.0.jar 9000
 서버가 시작되면 다음 두 개의 WebSocket 엔드포인트가 열립니다:
 
 - **ESP32 엔드포인트**: `ws://localhost:8887/esp32`
-  - ESP32-CAM 장치가 연결하여 영상 데이터를 전송
-  
+    - ESP32-CAM 장치가 연결하여 영상 데이터를 전송
 - **Viewer 엔드포인트**: `ws://localhost:8887/viewer`
-  - 웹 클라이언트가 연결하여 실시간 스트림을 수신
+    - 웹 클라이언트가 연결하여 실시간 스트림을 수신
 
 ## 📊 작동 방식
 
@@ -95,12 +119,44 @@ esp32-camera-server/
 ├── src/
 │   └── main/
 │       ├── java/
-│       │   └── io/lemoncloud/camera/server/
-│       │       └── CameraStreamServer.java
+│       │   └── io/granule/camera/server/
+│       │       ├── CameraStreamServer.java     # Main WebSocket server
+│       │       └── module/                     # Modular components
+│       │           ├── ConnectionManager.java  # Client connection management
+│       │           ├── LedStateManager.java    # LED state tracking
+│       │           ├── FrameRelayService.java  # Frame statistics
+│       │           └── ViewerStatsService.java # Server statistics
 │       └── resources/
 │           └── logback.xml
 └── README.md
 ```
+
+### 모듈 설명
+
+서버는 기능별로 모듈화된 아키텍처를 사용합니다:
+
+**ConnectionManager**
+
+- ESP32 클라이언트와 웹 클라이언트 구분 및 관리
+- 클라이언트별 메시지 브로드캐스트
+- 연결 상태 추적
+
+**LedStateManager**
+
+- ESP32 LED 상태 추적
+- LED 명령 카운팅
+- LED 상태 업데이트 관리
+
+**FrameRelayService**
+
+- 프레임 수신 통계 (총 프레임 수, 바이트 수)
+- 프레임 중계 성능 모니터링
+
+**ViewerStatsService**
+
+- 서버 가동 시간 추적
+- 통합 통계 제공
+- 로그 출력 관리
 
 ### Granule Core 통합
 
@@ -108,7 +164,7 @@ esp32-camera-server/
 
 ```xml
 <dependency>
-    <groupId>io.lemoncloud</groupId>
+    <groupId>io.granule</groupId>
     <artifactId>granule-core</artifactId>
     <version>1.0.0</version>
 </dependency>
@@ -116,4 +172,4 @@ esp32-camera-server/
 
 ## 📝 라이선스
 
-Copyright (C) 2026 LemonCloud Co Ltd. - All Rights Reserved.
+Copyright (C) 2026 Granule Co Ltd. - All Rights Reserved.

@@ -1,0 +1,59 @@
+# ESP32 Camera Streaming Project - Git Ignore
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# AWS
+.aws/
+*.pem
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+build.log
+.github/java-upgrade/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Build artifacts
+*.tar.gz
+*.zip
+target/
+.m2/
+.pio/
+.platformio/
+*.jar
+*.class
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*~
+
+# Node modules
+node_modules/
+package-lock.json
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Configuration files (deployment only)
+nginx.conf

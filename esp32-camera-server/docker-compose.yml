@@ -1,0 +1,40 @@
+services:
+    # ESP32 Camera WebSocket Server
+    camera-server:
+        build:
+            context: ./esp32-camera-server
+            dockerfile: Dockerfile
+        container_name: esp32-camera-server
+        ports:
+            - "8887:8887"
+        environment:
+            - SERVER_PORT=8887
+            - JAVA_OPTS=-Xms256m -Xmx512m
+        restart: unless-stopped
+        networks:
+            - camera-network
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8887/"]
+            interval: 30s
+            timeout: 3s
+            retries: 3
+            start_period: 10s
+
+    # Web Client (Nginx serving static files)
+    camera-client:
+        image: nginx:alpine
+        container_name: esp32-camera-client
+        ports:
+            - "80:80"
+        volumes:
+            - ./esp32-camera-client:/usr/share/nginx/html:ro
+            - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+        depends_on:
+            - camera-server
+        restart: unless-stopped
+        networks:
+            - camera-network
+
+networks:
+    camera-network:
+        driver: bridge

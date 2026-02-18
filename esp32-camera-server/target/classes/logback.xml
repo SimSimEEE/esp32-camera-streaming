@@ -10,5 +10,5 @@
         <appender-ref ref="STDOUT" />
     </root>
 
-    <logger name="io.lemoncloud.camera" level="DEBUG" />
+    <logger name="io.granule.camera" level="DEBUG" />
 </configuration>

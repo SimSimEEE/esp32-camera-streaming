@@ -45,22 +45,52 @@ http-server -p 8080
 #### VS Code Live Server
 
 VS Code에서 Live Server 확장 프로그램 설치 후:
+
 - `index.html` 파일 우클릭
 - "Open with Live Server" 선택
 
 ## ⚙️ 설정
 
-### WebSocket 서버 주소 변경
+**⚠️ 중요**: 모든 설정값은 `config.js` 파일에서 중앙 관리됩니다.
 
-`app.js` 파일의 `wsUrl`을 수정하세요:
+### 환경별 설정
+
+`config.js` 파일은 자동으로 환경을 감지하여 적절한 설정을 사용합니다:
+
+- **local**: `localhost:8887` (로컬 개발)
+- **docker**: `localhost/ws` (Docker Compose)
+- **production**: 배포된 서버 (아래 참조)
+
+### 프로덕션 서버 주소 변경
+
+배포 시 `config.js`의 `production` 섹션을 수정하세요:
 
 ```javascript
-// 로컬 서버
-this.wsUrl = 'ws://localhost:8887/viewer';
-
-// 원격 서버
-this.wsUrl = 'ws://192.168.0.100:8887/viewer';
+production: {
+    wsUrl: "ws://your-server-domain.com/ws/viewer",
+    esp32Endpoint: "ws://your-server-domain.com/ws/esp32",
+    reconnectInterval: 10000,
+    heartbeatInterval: 60000,
+}
 ```
+
+### 고급 설정 (선택사항)
+
+```javascript
+const COMMON_CONFIG = {
+    maxReconnectAttempts: 5, // 최대 재연결 시도 횟수
+    showDebugLogs: true, // 디버그 로그 표시
+    canvasUpdateInterval: 16, // Canvas 업데이트 간격 (ms)
+    statsUpdateInterval: 1000, // 통계 업데이트 간격 (ms)
+};
+```
+
+**주요 설정값**:
+
+- `wsUrl`: 웹소켓 서버 주소
+- `reconnectInterval`: 재연결 시도 간격 (ms)
+- `maxReconnectAttempts`: 최대 재연결 횟수 (0 = 무제한)
+- `showDebugLogs`: 콘솔 디버그 로그 활성화
 
 ## 🎮 사용법
 
@@ -73,16 +103,19 @@ this.wsUrl = 'ws://192.168.0.100:8887/viewer';
 ## 📊 화면 정보
 
 ### 상단 상태 표시
+
 - 🟢 녹색: 서버 연결됨
 - 🔴 빨간색: 연결 끊김
 
 ### 정보 패널
+
 - **FPS**: 초당 프레임 수
 - **해상도**: 영상 해상도 (예: 640x480)
 - **수신 데이터**: 총 수신한 데이터량 (KB)
 - **프레임 수**: 총 수신한 프레임 수
 
 ### 연결 로그
+
 - 실시간 연결 상태 및 이벤트 로그
 - 최근 50개 로그 항목 표시
 
@@ -98,17 +131,20 @@ this.wsUrl = 'ws://192.168.0.100:8887/viewer';
 ## 🔍 문제 해결
 
 ### 연결이 안 될 때
+
 1. WebSocket 서버가 실행 중인지 확인
 2. `app.js`의 서버 주소가 올바른지 확인
 3. 방화벽에서 포트가 열려있는지 확인
 4. 브라우저 콘솔(F12)에서 에러 확인
 
 ### 영상이 표시되지 않을 때
+
 1. ESP32-CAM이 서버에 연결되었는지 확인
 2. 서버 로그에서 프레임 수신 여부 확인
 3. 브라우저 콘솔에서 JPEG 디코딩 에러 확인
 
 ### 성능이 낮을 때
+
 1. 네트워크 상태 확인
 2. ESP32의 프레임 레이트 조정
 3. ESP32의 영상 품질 조정
@@ -133,8 +169,8 @@ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 class CameraViewer {
     // 스냅샷 저장 기능
     takeSnapshot = () => {
-        const dataUrl = this.canvas.toDataURL('image/jpeg');
-        const link = document.createElement('a');
+        const dataUrl = this.canvas.toDataURL("image/jpeg");
+        const link = document.createElement("a");
         link.download = `snapshot_${Date.now()}.jpg`;
         link.href = dataUrl;
         link.click();
@@ -145,10 +181,11 @@ class CameraViewer {
 ## 📱 모바일 지원
 
 이 클라이언트는 반응형 디자인으로 모바일 브라우저에서도 작동합니다:
+
 - 터치 스크린 지원
 - 세로/가로 방향 자동 조정
 - 모바일 최적화 레이아웃
 
 ## 📝 라이선스
 
-Copyright (C) 2026 LemonCloud Co Ltd. - All Rights Reserved.
+Copyright (C) 2026 Granule Co Ltd. - All Rights Reserved.
