@@ -15,10 +15,37 @@ PATCH: Bug fixes, backward-compatible
 ## Current Versions
 
 - **Client**: 1.0.1
-- **Server**: 1.3.0
+- **Server**: 1.6.0
 - **Firmware**: 1.0.1
 
 ## Version History
+
+### v1.6.0 (2026-02-19)
+
+**Type**: MINOR (Server)
+
+**Changes**:
+
+- add AI-powered motion detection system
+
+
+### v1.5.0 (2026-02-19)
+
+**Type**: MINOR (Server)
+
+**Changes**:
+
+- Add DuckDNS setup scripts and environment variables for fixed WebSocket URL
+
+
+### v1.4.0 (2026-02-18)
+
+**Type**: MINOR (Server)
+
+**Changes**:
+
+- integrate full portfolio into esp32-camera-client and remove legacy version
+
 
 ### v1.3.0 (2026-02-18)
 

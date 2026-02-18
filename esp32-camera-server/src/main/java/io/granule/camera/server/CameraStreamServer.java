@@ -4,7 +4,7 @@
  * - Modular architecture: Connection + LED + Frame + Stats modules
  * - Features: Frame relay, LED synchronization, connection management
  *
- * @author      Sim Si-Geun <sim@granule.io>
+ * @author      Sim Woo-Keun <smileteeth14@gmail.com>
  * @date        2026-02-18 modularized version
  *
  * @copyright   (C) 2026 Granule Co Ltd. - All Rights Reserved.

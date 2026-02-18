@@ -3,7 +3,7 @@
  * - WebSocket connection management module
  * - Handles: Client classification, connection tracking, broadcasting
  *
- * @author      Sim Si-Geun <sim@granule.io>
+ * @author      Sim Woo-Keun <smileteeth14@gmail.com>
  * @date        2026-02-18 initial version
  *
  * @copyright   (C) 2026 Granule Co Ltd. - All Rights Reserved.
