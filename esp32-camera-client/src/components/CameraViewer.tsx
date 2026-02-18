@@ -62,11 +62,11 @@ export const CameraViewer = () => {
 
     // Color map matching Python analyzer (CSS rgba for canvas)
     const OVERLAY_COLOR: Record<string, string> = {
-        person:  'rgba(255, 50,  50,  0.9)',  // Red
-        light:   'rgba(255, 230, 50,  0.9)',  // Yellow
-        object:  'rgba(255, 165, 50,  0.9)',  // Orange
-        camera:  'rgba(220, 50,  255, 0.9)',  // Magenta
-        unknown: 'rgba(160, 160, 160, 0.9)',  // Gray
+        person:  'rgba(255, 50, 50, 0.9)',
+        light:   'rgba(255, 230, 50, 0.9)',
+        object:  'rgba(255, 165, 50, 0.9)',
+        camera:  'rgba(220, 50, 255, 0.9)',
+        unknown: 'rgba(160, 160, 160, 0.9)',
     };
 
     // WebSocket URL from environment variable
@@ -199,48 +199,51 @@ export const CameraViewer = () => {
             // Draw motion overlay if still valid
             const overlay = motionOverlayRef.current;
             if (overlay && Date.now() < overlay.expiresAt && overlay.boxes.length > 0) {
-                const color = OVERLAY_COLOR[overlay.changeType] ?? OVERLAY_COLOR.unknown;
-                const scaleX = canvas.width  / overlay.frameSize.w;
-                const scaleY = canvas.height / overlay.frameSize.h;
-
                 ctx.save();
-                ctx.strokeStyle = color;
-                ctx.lineWidth = 2;
-                ctx.shadowColor = color;
-                ctx.shadowBlur = 6;
+                try {
+                    const color = OVERLAY_COLOR[overlay.changeType] ?? OVERLAY_COLOR.unknown;
+                    const scaleX = canvas.width  / overlay.frameSize.w;
+                    const scaleY = canvas.height / overlay.frameSize.h;
 
-                for (const box of overlay.boxes) {
-                    const sx = Math.round(box.x * scaleX);
-                    const sy = Math.round(box.y * scaleY);
-                    const sw = Math.round(box.w * scaleX);
-                    const sh = Math.round(box.h * scaleY);
-                    ctx.strokeRect(sx, sy, sw, sh);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2;
+                    ctx.shadowColor = color;
+                    ctx.shadowBlur = 6;
+
+                    for (const box of overlay.boxes) {
+                        const sx = Math.round(box.x * scaleX);
+                        const sy = Math.round(box.y * scaleY);
+                        const sw = Math.round(box.w * scaleX);
+                        const sh = Math.round(box.h * scaleY);
+                        ctx.strokeRect(sx, sy, sw, sh);
+                    }
+
+                    // Label badge (top-left of first box)
+                    const first = overlay.boxes[0];
+                    const lx = Math.round(first.x * scaleX);
+                    const ly = Math.round(first.y * scaleY);
+                    const label = `${overlay.changeType.toUpperCase()} ${Math.round(overlay.confidence * 100)}%`;
+                    const subLabel = `${overlay.motionLevel} ${overlay.changePercentage.toFixed(1)}%`;
+
+                    ctx.shadowBlur = 0;
+                    ctx.font = 'bold 11px monospace';
+                    const tw = ctx.measureText(label).width;
+                    const badgeH = 32;
+                    const badgeTop = ly > badgeH + 2 ? ly - badgeH - 2 : ly + 2;
+
+                    ctx.fillStyle = color.replace(', 0.9)', ', 0.75)');
+                    ctx.fillRect(lx, badgeTop, tw + 10, badgeH);
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillText(label, lx + 5, badgeTop + 13);
+                    ctx.font = '10px monospace';
+                    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                    ctx.fillText(subLabel, lx + 5, badgeTop + 26);
+                } catch (e) {
+                    console.warn('[Overlay] Draw error:', e);
+                } finally {
+                    ctx.restore();
                 }
-
-                // Label badge (top-left of first box)
-                const first = overlay.boxes[0];
-                const lx = Math.round(first.x * scaleX);
-                const ly = Math.round(first.y * scaleY);
-                const label = `${overlay.changeType.toUpperCase()} ${Math.round(overlay.confidence * 100)}%`;
-                const subLabel = `${overlay.motionLevel} ${overlay.changePercentage.toFixed(1)}%`;
-
-                ctx.font = 'bold 12px monospace';
-                const tw = ctx.measureText(label).width;
-                const badgeH = 32;
-                const badgeTop = ly > badgeH + 2 ? ly - badgeH - 2 : ly + 2;
-
-                ctx.shadowBlur = 0;
-                ctx.fillStyle = color.replace('0.9', '0.75');
-                ctx.fillRect(lx, badgeTop, tw + 10, badgeH);
-
-                ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 11px monospace';
-                ctx.fillText(label, lx + 5, badgeTop + 13);
-                ctx.font = '10px monospace';
-                ctx.fillStyle = 'rgba(255,255,255,0.85)';
-                ctx.fillText(subLabel, lx + 5, badgeTop + 26);
-
-                ctx.restore();
             }
         };
 

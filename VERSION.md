@@ -20,6 +20,15 @@ PATCH: Bug fixes, backward-compatible
 
 ## Version History
 
+### v1.12.0 (2026-02-19)
+
+**Type**: MINOR (Server)
+
+**Changes**:
+
+- show live bounding box overlay on streaming canvas
+
+
 ### v1.11.1 (2026-02-19)
 
 **Type**: PATCH (Server)
