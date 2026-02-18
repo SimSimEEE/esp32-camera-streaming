@@ -104,7 +104,7 @@ public final class ServerConfig {
     /**
      * Application version
      */
-    public static final String APP_VERSION = "1.0.1";
+    public static final String APP_VERSION = "1.1.0";
     
     /**
      * Application author
