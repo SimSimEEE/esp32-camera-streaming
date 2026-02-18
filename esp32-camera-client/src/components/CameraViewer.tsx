@@ -47,6 +47,28 @@ export const CameraViewer = () => {
     const fpsCounterRef = useRef({ count: 0, lastTime: 0 });
     const isConnectingRef = useRef(false);
 
+    // Motion overlay state (bounding boxes from AI analyzer)
+    interface BoundingBox { x: number; y: number; w: number; h: number; }
+    interface MotionOverlay {
+        boxes: BoundingBox[];
+        changeType: string;
+        confidence: number;
+        motionLevel: string;
+        changePercentage: number;
+        frameSize: { w: number; h: number };
+        expiresAt: number; // timestamp ms
+    }
+    const motionOverlayRef = useRef<MotionOverlay | null>(null);
+
+    // Color map matching Python analyzer (CSS rgba for canvas)
+    const OVERLAY_COLOR: Record<string, string> = {
+        person:  'rgba(255, 50,  50,  0.9)',  // Red
+        light:   'rgba(255, 230, 50,  0.9)',  // Yellow
+        object:  'rgba(255, 165, 50,  0.9)',  // Orange
+        camera:  'rgba(220, 50,  255, 0.9)',  // Magenta
+        unknown: 'rgba(160, 160, 160, 0.9)',  // Gray
+    };
+
     // WebSocket URL from environment variable
     const WS_URL = `${import.meta.env.VITE_WS_URL || "wss://esp32camera.duckdns.org"}/viewer`;
     const DEBUG_MODE = import.meta.env.VITE_DEBUG === "true";
@@ -173,6 +195,53 @@ export const CameraViewer = () => {
 
             ctx.drawImage(img, 0, 0);
             URL.revokeObjectURL(url);
+
+            // Draw motion overlay if still valid
+            const overlay = motionOverlayRef.current;
+            if (overlay && Date.now() < overlay.expiresAt && overlay.boxes.length > 0) {
+                const color = OVERLAY_COLOR[overlay.changeType] ?? OVERLAY_COLOR.unknown;
+                const scaleX = canvas.width  / overlay.frameSize.w;
+                const scaleY = canvas.height / overlay.frameSize.h;
+
+                ctx.save();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 6;
+
+                for (const box of overlay.boxes) {
+                    const sx = Math.round(box.x * scaleX);
+                    const sy = Math.round(box.y * scaleY);
+                    const sw = Math.round(box.w * scaleX);
+                    const sh = Math.round(box.h * scaleY);
+                    ctx.strokeRect(sx, sy, sw, sh);
+                }
+
+                // Label badge (top-left of first box)
+                const first = overlay.boxes[0];
+                const lx = Math.round(first.x * scaleX);
+                const ly = Math.round(first.y * scaleY);
+                const label = `${overlay.changeType.toUpperCase()} ${Math.round(overlay.confidence * 100)}%`;
+                const subLabel = `${overlay.motionLevel} ${overlay.changePercentage.toFixed(1)}%`;
+
+                ctx.font = 'bold 12px monospace';
+                const tw = ctx.measureText(label).width;
+                const badgeH = 32;
+                const badgeTop = ly > badgeH + 2 ? ly - badgeH - 2 : ly + 2;
+
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = color.replace('0.9', '0.75');
+                ctx.fillRect(lx, badgeTop, tw + 10, badgeH);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 11px monospace';
+                ctx.fillText(label, lx + 5, badgeTop + 13);
+                ctx.font = '10px monospace';
+                ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                ctx.fillText(subLabel, lx + 5, badgeTop + 26);
+
+                ctx.restore();
+            }
         };
 
         img.onerror = () => {
@@ -184,6 +253,27 @@ export const CameraViewer = () => {
 
     const handleTextMessage = (message: string) => {
         console.log("Message:", message);
+
+        // Try to parse as JSON first (motion events from analyzer)
+        try {
+            const json = JSON.parse(message);
+            if (json.type === 'motion_event' && json.data?.bounding_boxes) {
+                const d = json.data;
+                motionOverlayRef.current = {
+                    boxes: d.bounding_boxes,
+                    changeType: d.change_type ?? 'unknown',
+                    confidence: d.confidence ?? 0,
+                    motionLevel: d.motion_level ?? 'unknown',
+                    changePercentage: d.change_percentage ?? 0,
+                    frameSize: d.frame_size ?? { w: 640, h: 480 },
+                    expiresAt: Date.now() + 3000,  // show for 3 seconds
+                };
+                return;
+            }
+            return; // other JSON (motion_debug etc.) – handled by MotionAlerts
+        } catch {
+            // not JSON, handle plain text commands below
+        }
 
         if (message.startsWith("VIEWERS_COUNT:")) {
             const count = parseInt(message.split(":")[1]);

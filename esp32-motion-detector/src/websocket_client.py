@@ -175,6 +175,12 @@ class MotionDetectionClient:
                 cv2.putText(labeled_frame, level_text, (12, labeled_frame.shape[0] - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, border_color, 1)
                 
+                # Build bounding box list for web overlay
+                bounding_boxes = []
+                for contour in contours:
+                    (cx, cy, cw, ch) = cv2.boundingRect(contour)
+                    bounding_boxes.append({'x': cx, 'y': cy, 'w': cw, 'h': ch})
+
                 # Send analysis result to server
                 await self._send_motion_event({
                     'frame_number': self.frame_count,
@@ -183,7 +189,9 @@ class MotionDetectionClient:
                     'change_type': change_type,
                     'description': description,
                     'confidence': round(confidence, 2),
-                    'timestamp': datetime.now().isoformat()
+                    'timestamp': datetime.now().isoformat(),
+                    'frame_size': {'w': frame.shape[1], 'h': frame.shape[0]},
+                    'bounding_boxes': bounding_boxes,
                 })
                 
                 # Save snapshot if enabled
