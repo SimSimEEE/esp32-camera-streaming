@@ -14,47 +14,96 @@ PATCH: Bug fixes, backward-compatible
 
 ## Current Versions
 
-- **Client**: 1.0.1
-- **Server**: 1.8.0
-- **Firmware**: 1.0.1
+- **Client**: 1.1.0
+- **Server**: 1.6.0
+- **Firmware**: 1.1.0
 
 ## Version History
 
-### v1.8.0 (2026-02-19)
-
-**Type**: MINOR (Server)
-
-**Changes**:
-
-- enhance client UI with motion alerts integration
-
-
-### v1.7.0 (2026-02-19)
-
-**Type**: MINOR (Server)
-
-**Changes**:
-
-- update ESP32 firmware for improved streaming
-
-
-### v1.6.1 (2026-02-19)
-
-**Type**: PATCH (Server)
-
-**Changes**:
-
-- enhance server modules for motion detection support
-
-
 ### v1.6.0 (2026-02-19)
 
-**Type**: MINOR (Server)
+**Type**: MINOR (All Components)
 
-**Changes**:
+**Breaking Changes**: None
 
-- add AI-powered motion detection system
+**New Features**:
 
+#### Motion Detection System (Server 1.6.0, Client 1.1.0)
+- ✅ **AI-Powered Motion Detection Service**
+  - Python-based motion detection with OpenCV
+  - Real-time frame analysis with configurable sensitivity
+  - AI-powered motion reason detection using OpenAI GPT-4o
+  - Fallback to local heuristic analysis without API key
+  - Automatic snapshot capture with timestamps
+  - WebSocket integration with camera server
+  
+- ✅ **Client Integration**
+  - MotionAlerts component for real-time notifications
+  - Motion event history display
+  - AI-generated motion reason display
+  - Responsive design with smooth animations
+  
+- ✅ **Deployment Automation**
+  - One-command deployment script (start-with-motion-detection.sh)
+  - Docker support with auto-build
+  - Comprehensive setup guide (MOTION_DETECTION_GUIDE.md)
+
+#### Server Enhancements (Server 1.6.0)
+- ✅ **Enhanced Module Architecture**
+  - Improved ConnectionManager for multi-client handling
+  - Enhanced FrameRelayService with motion detector integration
+  - Optimized ViewerStatsService for real-time monitoring
+  - Better WebSocket message routing
+  - Thread-safe operations improvements
+  
+- ✅ **Build & Deployment**
+  - Multi-stage Docker build optimization
+  - Updated Maven dependencies
+  - Motion detector service integration
+  - Faster build and deployment scripts
+
+#### Firmware Improvements (Firmware 1.1.0)
+- ✅ **Streaming Optimization**
+  - Optimized CameraModule for better frame capture
+  - Enhanced LedModule with smoother state transitions
+  - Lower latency frame transmission
+  - Better LED feedback for motion events
+  - Improved WebSocket connection stability
+  - Enhanced error handling and recovery
+
+#### Client UI Enhancements (Client 1.1.0)
+- ✅ **Portfolio Components**
+  - Improved CameraViewer with better controls
+  - Enhanced Hero, IoTDashboard, and other components
+  - Better responsive design across devices
+  - Smoother transitions and interactions
+  
+- ✅ **Configuration**
+  - Added config.js for environment settings
+  - Development server improvements
+  - Better build configuration
+
+#### Documentation (All)
+- ✅ **Cleanup & Reorganization**
+  - Removed obsolete documentation files
+  - Removed legacy portfolio directory
+  - Updated README.md with motion detection info
+  - Updated DEPLOY_GUIDE.md with new deployment steps
+  - Consolidated version management in VERSION.md
+
+**Technical Details**:
+
+- **Motion Detection Stack**: Python 3.11, OpenCV, WebSocket, OpenAI API
+- **Server Stack**: Java 23, Maven, WebSocket (Tyrus)
+- **Client Stack**: React 18, TypeScript, Tailwind CSS, Vite
+- **Firmware Stack**: Arduino, ESP32-CAM, WebSocket
+
+**Migration Notes**:
+
+- No breaking changes - fully backward compatible
+- Motion detection is opt-in feature
+- Existing deployments work without changes
+- To enable motion detection, use `start-with-motion-detection.sh`
 
 ### v1.5.0 (2026-02-19)
 
