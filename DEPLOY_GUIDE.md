@@ -3,7 +3,7 @@
 - `DEPLOY_GUIDE.md`
 -   - ESP32 Camera Streaming 배포 가이드
 -
-- @author Sim Si-Geun <simsimee@lemoncloud.io>
+- @author Sim Woo-Keun <smileteeth14@gmail.com>
 - @date 2026-02-18 initial version
 -
 - @copyright (C) 2026 LemonCloud Co Ltd. - All Rights Reserved.

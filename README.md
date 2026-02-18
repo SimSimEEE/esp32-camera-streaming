@@ -1,6 +1,6 @@
 # ESP32 Camera Streaming Project
 
-ESP32-CAM을 이용한 실시간 카메라 스트리밍 시스템입니다. **3개의 완전히 독립적인 프로젝트**로 구성되어 있으며, 각각 독자적으로 개발 및 배포가 가능합니다.
+ESP32-CAM을 이용한 실시간 카메라 스트리밍 시스템입니다. **4개의 완전히 독립적인 프로젝트**로 구성되어 있으며, 각각 독자적으로 개발 및 배포가 가능합니다.
 
 ## 🚀 빠른 배포
 
@@ -14,9 +14,11 @@ ESP32-CAM을 이용한 실시간 카메라 스트리밍 시스템입니다. **3�
 
 > 📘 **배포 가이드**:
 >
-> - [배포준비완료.md](배포준비완료.md) - 빠른 시작 (★ 시작은 여기서!)
-> - [DEPLOY_GUIDE.md](DEPLOY_GUIDE.md) - 상세 배포 가이드
+> - [DEPLOY_GUIDE.md](DEPLOY_GUIDE.md) - 빠른 시작 및 상세 배포 가이드
 > - [DEPLOYMENT.md](DEPLOYMENT.md) - 클라우드 아키텍처
+> - [EC2_DEPLOYMENT.md](EC2_DEPLOYMENT.md) - EC2 전용 배포 가이드
+> - [DEPLOY_WITH_DUCKDNS.md](DEPLOY_WITH_DUCKDNS.md) - DuckDNS + SSL 배포 가이드
+> - [MOTION_DETECTION_GUIDE.md](MOTION_DETECTION_GUIDE.md) - 모션 감지 설정 가이드
 
 ## 📋 프로젝트 구조 (독립 실행)
 
@@ -37,26 +39,42 @@ esp32-camera-streaming/
 │   ├── nginx.conf
 │   └── README.md               # 클라이언트 전용 문서
 │
-└── esp32-camera-firmware/      # 📟 ESP32-CAM 펌웨어
-    ├── package.json            # 펌웨어 독립 실행 스크립트
-    ├── platformio.ini
-    └── README.md               # 펌웨어 전용 문서
+├── esp32-camera-firmware/      # 📟 ESP32-CAM 펌웨어
+│   ├── package.json            # 펌웨어 독립 실행 스크립트
+│   ├── platformio.ini
+│   └── README.md               # 펌웨어 전용 문서
+│
+└── esp32-motion-detector/      # 🎯 모션 감지 & AI 분석 (NEW)
+    ├── src/                    # Python source code
+    ├── requirements.txt        # Python dependencies
+    ├── Dockerfile
+    ├── docker-compose.yml
+    └── README.md               # 모션 감지 전용 문서
 ```
 
 ## 🎯 시스템 아키텍처
 
 ```
-┌─────────────┐         WebSocket          ┌─────────────┐
-│             │ ─────────────────────────→ │             │
-│  ESP32-CAM  │     /esp32 (영상 전송)     │    Java     │
-│             │                            │   Server    │
-└─────────────┘                            │  (Port:8887)│
-                                           │             │
-┌─────────────┐         WebSocket          │             │
-│     Web     │ ←───────────────────────── │             │
-│   Browser   │   /viewer (영상 수신)       └─────────────┘
+┌─────────────┐         WebSocket          ┌─────────────┐         WebSocket          ┌─────────────┐
+│             │ ─────────────────────────→ │             │ ─────────────────────────→ │   Motion    │
+│  ESP32-CAM  │     /esp32 (영상 전송)     │    Java     │    (Frame Relay)           │  Detector   │
+│             │                            │   Server    │                            │  (Python)   │
+└─────────────┘                            │  (Port:8887)│                            │   OpenCV    │
+                                           │             │                            │     AI      │
+┌─────────────┐         WebSocket          │             │ ←──────────────────────────│  Analysis   │
+│     Web     │ ←───────────────────────── │             │    (Motion Events)         └─────────────┘
+│   Browser   │   /viewer (영상 수신)       │             │
+│             │   + Motion Alerts          └─────────────┘
 └─────────────┘
 ```
+
+### 새로운 기능: 🎯 AI 모션 감지
+
+- **OpenCV 기반 실시간 화면 변화 감지**
+- **AI를 이용한 변화 이유 분석** (사람, 물체, 조명, 카메라 흔들림)
+- **자동 스냅샷 저장**
+- **웹 UI에 실시간 알림 표시**
+
 
 ## ⚙️ 환경 변수 설정
 
@@ -256,11 +274,21 @@ npm test                  # 테스트
 
 ## 📚 상세 문서
 
+### 프로젝트별 문서
 - **서버**: [esp32-camera-server/README.md](esp32-camera-server/README.md)
 - **클라이언트**: [esp32-camera-client/README.md](esp32-camera-client/README.md)
 - **펌웨어**: [esp32-camera-firmware/README.md](esp32-camera-firmware/README.md)
-- **배포 가이드**: [DEPLOYMENT.md](DEPLOYMENT.md)
-- **외부 사용자**: [EXTERNAL_SETUP.md](EXTERNAL_SETUP.md)
+- **모션 감지**: [esp32-motion-detector/README.md](esp32-motion-detector/README.md)
+
+### 배포 가이드
+- **빠른 시작**: [DEPLOY_GUIDE.md](DEPLOY_GUIDE.md)
+- **클라우드 아키텍처**: [DEPLOYMENT.md](DEPLOYMENT.md)
+- **EC2 배포**: [EC2_DEPLOYMENT.md](EC2_DEPLOYMENT.md)
+- **DuckDNS + SSL**: [DEPLOY_WITH_DUCKDNS.md](DEPLOY_WITH_DUCKDNS.md)
+
+### 기능별 가이드
+- **모션 감지 설정**: [MOTION_DETECTION_GUIDE.md](MOTION_DETECTION_GUIDE.md)
+- **버전 관리**: [VERSION.md](VERSION.md)
 
 ## 💡 주요 특징
 
