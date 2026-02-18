@@ -3,7 +3,7 @@
  * - ESP32-CAM configuration constants
  * - 모든 설정값을 한 곳에서 관리
  *
- * @author      Sim Si-Geun <sim@granule.io>
+ * @author      Sim Woo-Keun <smileteeth14@gmail.com>
  * @date        2026-02-18 initial version
  *
  * @copyright   (C) 2026 Granule Co Ltd. - All Rights Reserved.

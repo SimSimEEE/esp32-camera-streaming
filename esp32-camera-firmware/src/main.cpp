@@ -14,7 +14,7 @@
  * - Connect FTDI programmer for initial upload
  * - GPIO 0 to GND for programming mode
  * 
- * @author      sim woo keun <sim@granule.io>
+ * @author      Sim Woo-Keun <smileteeth14@gmail.com>
  * @date        2026-02-17 initial version (converted to PlatformIO)
  * 
  * @copyright   (C) 2026 Granule Co Ltd. - All Rights Reserved.
