@@ -20,6 +20,15 @@ PATCH: Bug fixes, backward-compatible
 
 ## Version History
 
+### v1.14.0 (2026-02-19)
+
+**Type**: MINOR (Server)
+
+**Changes**:
+
+- add expand/collapse depth and GitHub icon to portfolio cards
+
+
 ### v1.13.0 (2026-02-19)
 
 **Type**: MINOR (Server)
