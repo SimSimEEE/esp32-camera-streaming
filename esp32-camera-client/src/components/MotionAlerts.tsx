@@ -200,15 +200,17 @@ const MotionAlerts: React.FC<MotionAlertsProps> = ({ websocket, maxEvents = 10 }
                                     <div className="text-gray-400">📐 감지 좌표 (상위 3개):</div>
                                     {debugInfo.contourBoxes.slice(0, 3).map((b, i) => (
                                         <div key={i} className="text-xs text-cyan-300 pl-2">
-                                            [{i+1}] x={b.x} y={b.y} {b.w}×{b.h}px
+                                            [{i + 1}] x={b.x} y={b.y} {b.w}×{b.h}px
                                         </div>
                                     ))}
                                 </div>
                             )}
                             {(!debugInfo.contourBoxes || debugInfo.contourBoxes.length === 0) &&
-                             debugInfo.motionLevel !== 'none' && (
-                                <div className="text-xs text-yellow-500 mt-1">⚠️ 좌표 없음 (면적 미달)</div>
-                            )}
+                                debugInfo.motionLevel !== "none" && (
+                                    <div className="text-xs text-yellow-500 mt-1">
+                                        ⚠️ 좌표 없음 (면적 미달)
+                                    </div>
+                                )}
                             <div className="text-gray-500 text-xs mt-2">
                                 Last update:{" "}
                                 {new Date(debugInfo.timestamp).toLocaleTimeString("ko-KR")}

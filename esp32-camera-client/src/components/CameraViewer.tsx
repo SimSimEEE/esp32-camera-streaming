@@ -48,7 +48,12 @@ export const CameraViewer = () => {
     const isConnectingRef = useRef(false);
 
     // Motion overlay state (bounding boxes from AI analyzer)
-    interface BoundingBox { x: number; y: number; w: number; h: number; }
+    interface BoundingBox {
+        x: number;
+        y: number;
+        w: number;
+        h: number;
+    }
     interface MotionOverlay {
         boxes: BoundingBox[];
         changeType: string;
@@ -62,11 +67,11 @@ export const CameraViewer = () => {
 
     // Color map matching Python analyzer (CSS rgba for canvas)
     const OVERLAY_COLOR: Record<string, string> = {
-        person:  'rgba(255, 50, 50, 0.9)',
-        light:   'rgba(255, 230, 50, 0.9)',
-        object:  'rgba(255, 165, 50, 0.9)',
-        camera:  'rgba(220, 50, 255, 0.9)',
-        unknown: 'rgba(160, 160, 160, 0.9)',
+        person: "rgba(255, 50, 50, 0.9)",
+        light: "rgba(255, 230, 50, 0.9)",
+        object: "rgba(255, 165, 50, 0.9)",
+        camera: "rgba(220, 50, 255, 0.9)",
+        unknown: "rgba(160, 160, 160, 0.9)",
     };
 
     // WebSocket URL from environment variable
@@ -202,7 +207,7 @@ export const CameraViewer = () => {
                 ctx.save();
                 try {
                     const color = OVERLAY_COLOR[overlay.changeType] ?? OVERLAY_COLOR.unknown;
-                    const scaleX = canvas.width  / overlay.frameSize.w;
+                    const scaleX = canvas.width / overlay.frameSize.w;
                     const scaleY = canvas.height / overlay.frameSize.h;
 
                     ctx.strokeStyle = color;
@@ -226,21 +231,21 @@ export const CameraViewer = () => {
                     const subLabel = `${overlay.motionLevel} ${overlay.changePercentage.toFixed(1)}%`;
 
                     ctx.shadowBlur = 0;
-                    ctx.font = 'bold 11px monospace';
+                    ctx.font = "bold 11px monospace";
                     const tw = ctx.measureText(label).width;
                     const badgeH = 32;
                     const badgeTop = ly > badgeH + 2 ? ly - badgeH - 2 : ly + 2;
 
-                    ctx.fillStyle = color.replace(', 0.9)', ', 0.75)');
+                    ctx.fillStyle = color.replace(", 0.9)", ", 0.75)");
                     ctx.fillRect(lx, badgeTop, tw + 10, badgeH);
 
-                    ctx.fillStyle = '#ffffff';
+                    ctx.fillStyle = "#ffffff";
                     ctx.fillText(label, lx + 5, badgeTop + 13);
-                    ctx.font = '10px monospace';
-                    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                    ctx.font = "10px monospace";
+                    ctx.fillStyle = "rgba(255,255,255,0.85)";
                     ctx.fillText(subLabel, lx + 5, badgeTop + 26);
                 } catch (e) {
-                    console.warn('[Overlay] Draw error:', e);
+                    console.warn("[Overlay] Draw error:", e);
                 } finally {
                     ctx.restore();
                 }
@@ -260,33 +265,33 @@ export const CameraViewer = () => {
         // Try to parse as JSON first (motion events from analyzer)
         try {
             const json = JSON.parse(message);
-            if (json.type === 'motion_event' && json.data?.bounding_boxes) {
+            if (json.type === "motion_event" && json.data?.bounding_boxes) {
                 const d = json.data;
                 motionOverlayRef.current = {
                     boxes: d.bounding_boxes,
-                    changeType: d.change_type ?? 'unknown',
+                    changeType: d.change_type ?? "unknown",
                     confidence: d.confidence ?? 0,
-                    motionLevel: d.motion_level ?? 'unknown',
+                    motionLevel: d.motion_level ?? "unknown",
                     changePercentage: d.change_percentage ?? 0,
                     frameSize: d.frame_size ?? { w: 640, h: 480 },
-                    expiresAt: Date.now() + 3000,  // show for 3 seconds
+                    expiresAt: Date.now() + 3000, // show for 3 seconds
                 };
                 return;
             }
             // motion_debug: update overlay every frame using raw contour_boxes
-            if (json.type === 'motion_debug' && json.data?.contour_boxes?.length > 0) {
+            if (json.type === "motion_debug" && json.data?.contour_boxes?.length > 0) {
                 const d = json.data;
                 const prev = motionOverlayRef.current;
                 // Only update if no active motion_event overlay, or if it expired
                 if (!prev || Date.now() >= prev.expiresAt) {
                     motionOverlayRef.current = {
                         boxes: d.contour_boxes,
-                        changeType: 'unknown',
+                        changeType: "unknown",
                         confidence: 0,
                         motionLevel: d.motion_level,
                         changePercentage: d.change_percentage,
                         frameSize: { w: d.frame_w ?? 480, h: d.frame_h ?? 320 },
-                        expiresAt: Date.now() + 800,  // short-lived: next frame will refresh
+                        expiresAt: Date.now() + 800, // short-lived: next frame will refresh
                     };
                 }
             }

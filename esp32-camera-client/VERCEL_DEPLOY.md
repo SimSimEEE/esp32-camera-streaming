@@ -9,10 +9,10 @@
 3. **Settings** → **Environment Variables**
 4. 다음 변수 추가:
 
-| Name | Value | Environment |
-|------|-------|-------------|
-| `VITE_WS_URL` | `wss://esp32camera.duckdns.org` | Production |
-| `VITE_DEBUG` | `false` | Production |
+| Name          | Value                           | Environment |
+| ------------- | ------------------------------- | ----------- |
+| `VITE_WS_URL` | `wss://esp32camera.duckdns.org` | Production  |
+| `VITE_DEBUG`  | `false`                         | Production  |
 
 ### CLI로 설정:
 
