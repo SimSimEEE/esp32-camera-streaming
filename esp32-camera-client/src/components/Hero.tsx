@@ -37,17 +37,23 @@ export const Hero = () => {
                     <span className="text-primary-400 font-semibold">심우근</span>
                 </p>
 
-                <p className="text-base text-gray-500 mb-6">
-                    엔지니어의 정밀함 × 개발자의 확장성
-                </p>
+                <p className="text-base text-gray-500 mb-6">엔지니어의 정밀함 × 개발자의 확장성</p>
 
                 {/* Tech / Domain Tags */}
                 <div className="flex flex-wrap gap-2 justify-center max-w-2xl mx-auto mb-12">
                     {[
-                        "TypeScript", "Node.js", "Java",
-                        "AWS Lambda", "DynamoDB", "Elasticsearch",
-                        "WebSocket", "Docker", "MSA",
-                        "REST API", "Python", "ESP32",
+                        "TypeScript",
+                        "Node.js",
+                        "Java",
+                        "AWS Lambda",
+                        "DynamoDB",
+                        "Elasticsearch",
+                        "WebSocket",
+                        "Docker",
+                        "MSA",
+                        "REST API",
+                        "Python",
+                        "ESP32",
                     ].map((tag) => (
                         <span
                             key={tag}

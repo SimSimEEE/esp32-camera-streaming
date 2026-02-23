@@ -100,14 +100,16 @@ const projects: Project[] = [
         ],
         problemSolving: [
             {
-                problem: "세대 수 증가 후 전체 조회 Lambda가 6초+ 타임아웃으로 서비스 응답 불가 상황",
+                problem:
+                    "세대 수 증가 후 전체 조회 Lambda가 6초+ 타임아웃으로 서비스 응답 불가 상황",
                 approach:
                     "DynamoDB 파티션 설계와 접근 패턴 불일치 의심 → 기존 GSI의 풀스캔 원인 분석 → 단지 ID 기반 파티셔닝 재검토",
                 solution:
                     "단지 ID를 PK, 날짜를 SK로 하는 GSI 추가 및 Sparse Index 활용 → 쿼리 타임 90% 단축",
             },
             {
-                problem: "권한 체계에 운영자 역할이 추가되면서 if-else 권한 분기 코드 수십 개로 폭증",
+                problem:
+                    "권한 체계에 운영자 역할이 추가되면서 if-else 권한 분기 코드 수십 개로 폭증",
                 approach:
                     "Proxy 패턴을 통한 레이어 분리 검토 → 컨트롤러는 역할 주입만, 실제 권한 검증은 Proxy가 담당하도록 역할 분리",
                 solution:
@@ -154,14 +156,16 @@ const projects: Project[] = [
         ],
         problemSolving: [
             {
-                problem: "PG사 HTTP 타임아웃(3s) 후 재시도 시 동일 결제 중복 발생 → 사용자에게 이중 청구",
+                problem:
+                    "PG사 HTTP 타임아웃(3s) 후 재시도 시 동일 결제 중복 발생 → 사용자에게 이중 청구",
                 approach:
                     "멱등성(Idempotency) 관점에서 분석 → 결제 요청마다 서버가 고유 Key 생성·저장, 재시도 시 동일 요청 식별 방안 검토",
                 solution:
                     "UUID 기반 Idempotency Key를 DynamoDB에 TTL 저장, 재시도 시 기존 결과 반환 → 이중 청구 완전 차단",
             },
             {
-                problem: "PG사별 응답 포맷이 달라 결제 코드에 PG사 분기 로직이 세분화되어 확장마다 수정 반복",
+                problem:
+                    "PG사별 응답 포맷이 달라 결제 코드에 PG사 분기 로직이 세분화되어 확장마다 수정 반복",
                 approach:
                     "외부 취약점 차단을 위해 Transformer 패턴 검토 → PG사별 응답만 정규화하고 내부는 단일 결제 모델 사용",
                 solution:
@@ -208,7 +212,8 @@ const projects: Project[] = [
         ],
         problemSolving: [
             {
-                problem: "IoT 장비 네트워크 불안정으로 출입 이벤트 버스트 후 순서 역전 발생 → BI 데이터 오염",
+                problem:
+                    "IoT 장비 네트워크 불안정으로 출입 이벤트 버스트 후 순서 역전 발생 → BI 데이터 오염",
                 approach:
                     "이벤트 소싱 관점 접근 → 장비별 로컬 시퀀스 번호 부여, 서버에서 정렬 후 upsert 처리 방식 검토",
                 solution:
@@ -262,14 +267,16 @@ const projects: Project[] = [
         ],
         problemSolving: [
             {
-                problem: "O타입·보타닉 단말기 API 응답 포맷이 달라 결제 로직에 if-else 분기 20개 이상 누적",
+                problem:
+                    "O타입·보타닉 단말기 API 응답 포맷이 달라 결제 로직에 if-else 분기 20개 이상 누적",
                 approach:
                     "OCP(개방-폐쇄 원칙) 위반 확인 → Strategy + Adapter 패턴으로 단말기 추상화 레이어 도입 검토",
                 solution:
                     "공통 단말기 인터페이스 정의 후 타입별 Adapter 구현 → 분기 코드 완전 제거, 신규 단말기는 Adapter만 추가",
             },
             {
-                problem: "오프라인 단말기 재기동 후 동일 주문이 재전송되어 이중 결제 및 영수증 중복 발급",
+                problem:
+                    "오프라인 단말기 재기동 후 동일 주문이 재전송되어 이중 결제 및 영수증 중복 발급",
                 approach:
                     "단말기 상태 기점(offline/online)별 주문 상태를 명시적으로 관리 → 재기동 시 PENDING 상태 주문 확인 후 재시도",
                 solution:
@@ -283,7 +290,8 @@ const projects: Project[] = [
         company: "에스엘플랫폼",
         period: "2025.04 - 2025.12",
         role: "백엔드 설계·구현 · 모듈화·서비스 통합",
-        description: "QR/NFC 출입 통합 ACL, AI 챗봇, BI 대시보드, 글로벌 다국어 API, 무인 QR오더 풀스택 통합",
+        description:
+            "QR/NFC 출입 통합 ACL, AI 챗봇, BI 대시보드, 글로벌 다국어 API, 무인 QR오더 풀스택 통합",
         icon: Globe,
         color: "from-teal-500 to-cyan-500",
         tags: ["TypeScript", "Node.js", "DynamoDB", "Elasticsearch", "i18n", "ChatGPT API"],
@@ -323,7 +331,8 @@ const projects: Project[] = [
                     "단지 FAQ를 벡터 임베딩 후 질의 유사도 검색, 관련 문서를 System Prompt에 주입 → 도메인 특화 답변 유도",
             },
             {
-                problem: "글로벌 QR오더 요청 급증 시 Lambda cold start로 원시적 응답 지연 및 사용자 이탈",
+                problem:
+                    "글로벌 QR오더 요청 급증 시 Lambda cold start로 원시적 응답 지연 및 사용자 이탈",
                 approach:
                     "Serverless cold start 특성 분석 → 주문 메타데이터 캐싱으로 디펜던시 주입 제거, 핵심 함수 프로비저닝 적용 검토",
                 solution:
@@ -337,7 +346,8 @@ const projects: Project[] = [
         company: "개인 프로젝트",
         period: "2026.02",
         role: "풀스택 설계·개발 (Firmware · Java Server · Python AI · React Client)",
-        description: "ESP32-CAM 기반 실시간 영상 스트리밍, Race Condition 방지, AI 모션 감지 풀스택 구현",
+        description:
+            "ESP32-CAM 기반 실시간 영상 스트리밍, Race Condition 방지, AI 모션 감지 풀스택 구현",
         icon: MessageSquare,
         color: "from-primary-500 to-blue-500",
         tags: ["Java", "WebSocket", "ESP32", "Python", "Docker", "React", "AI"],
@@ -371,14 +381,16 @@ const projects: Project[] = [
         ],
         problemSolving: [
             {
-                problem: "클라이언트 3개가 동시에 LED ON/OFF 요청 시 하드웨어가 중간 상태로 멈추거나 명령 소실",
+                problem:
+                    "클라이언트 3개가 동시에 LED ON/OFF 요청 시 하드웨어가 중간 상태로 멈추거나 명령 소실",
                 approach:
                     "임계 구역(Critical Section) 문제로 정의 → Java 동시성 도구 중 단일 진입 보장 방법으로 Semaphore 검토",
                 solution:
                     "Semaphore(1)로 제어 요청 직렬화, AtomicReference로 현재 제어권 보유자를 원자적 갱신 → Race Condition 완전 차단",
             },
             {
-                problem: "Python AI 분석 결과(BoundingBox)가 프레임보다 늦게 도착하면 Canvas가 덜컥이고, 빠르면 반쯤 해제",
+                problem:
+                    "Python AI 분석 결과(BoundingBox)가 프레임보다 늦게 도착하면 Canvas가 덜컥이고, 빠르면 반쯤 해제",
                 approach:
                     "분석 딜레이와 프레임 딜레이를 통합 관리 → 오버레이를 프레임마다 갱신하지 않고 TTL 기반 유지 방식 검토",
                 solution:
@@ -466,7 +478,9 @@ export const ProjectCards = () => {
                             {/* Role */}
                             <div className="flex items-start gap-1.5 mb-4">
                                 <UserCog className="w-3 h-3 text-gray-600 mt-0.5 shrink-0" />
-                                <p className="text-xs text-gray-600 leading-relaxed">{project.role}</p>
+                                <p className="text-xs text-gray-600 leading-relaxed">
+                                    {project.role}
+                                </p>
                             </div>
 
                             {/* Description */}
@@ -602,28 +616,27 @@ export const ProjectCards = () => {
                                 )}
 
                             {/* Challenges */}
-                            {activeProject.challenges &&
-                                activeProject.challenges.length > 0 && (
-                                    <div>
-                                        <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
-                                            <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-                                            Technical Challenges
-                                        </h4>
-                                        <ul className="space-y-2">
-                                            {activeProject.challenges.map((item, i) => (
-                                                <li
-                                                    key={i}
-                                                    className="flex items-start gap-2 text-xs text-gray-500"
-                                                >
-                                                    <span className="text-amber-600 mt-0.5 shrink-0">
-                                                        !
-                                                    </span>
-                                                    <span>{item}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
+                            {activeProject.challenges && activeProject.challenges.length > 0 && (
+                                <div>
+                                    <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                                        <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                                        Technical Challenges
+                                    </h4>
+                                    <ul className="space-y-2">
+                                        {activeProject.challenges.map((item, i) => (
+                                            <li
+                                                key={i}
+                                                className="flex items-start gap-2 text-xs text-gray-500"
+                                            >
+                                                <span className="text-amber-600 mt-0.5 shrink-0">
+                                                    !
+                                                </span>
+                                                <span>{item}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
 
                             {/* Outcome */}
                             {activeProject.outcome && activeProject.outcome.length > 0 && (

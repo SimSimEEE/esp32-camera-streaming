@@ -153,9 +153,7 @@ export const CareerTimeline = () => {
                                 >
                                     <div
                                         className={`card hover:shadow-xl hover:shadow-primary-900/20 transition-all duration-300 ${
-                                            isExpanded
-                                                ? "ring-1 ring-primary-500/40"
-                                                : ""
+                                            isExpanded ? "ring-1 ring-primary-500/40" : ""
                                         }`}
                                     >
                                         {/* Phase Badge */}
@@ -263,7 +261,9 @@ export const CareerTimeline = () => {
                                                                                 key={i}
                                                                                 className="flex items-start gap-2 text-xs text-gray-500"
                                                                             >
-                                                                                <span className="text-amber-600 mt-0.5 shrink-0">★</span>
+                                                                                <span className="text-amber-600 mt-0.5 shrink-0">
+                                                                                    ★
+                                                                                </span>
                                                                                 <span>{item}</span>
                                                                             </li>
                                                                         ),
