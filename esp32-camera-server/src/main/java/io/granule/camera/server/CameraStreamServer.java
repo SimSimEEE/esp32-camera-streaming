@@ -261,10 +261,9 @@ public class CameraStreamServer extends WebSocketServer {
     private void sendVersionInfo(final WebSocket conn) {
         try {
             _log.info("sendVersionInfo() called for connection: {}", conn.getRemoteSocketAddress());
-            final String versionJson = String.format(
-                "{\"server\":\"%s\",\"firmware\":\"%s\"}",
-                ServerConfig.APP_VERSION,
-                firmwareVersion.get()
+            final String versionJson = "{\"server\":\"%s\",\"firmware\":\"%s\"}".formatted(
+                    ServerConfig.APP_VERSION,
+                    firmwareVersion.get()
             );
             final String message = "VERSION_INFO:" + versionJson;
             _log.info("Sending VERSION_INFO message: {}", message);
@@ -279,10 +278,9 @@ public class CameraStreamServer extends WebSocketServer {
      * Broadcast version information to all web clients
      */
     private void broadcastVersionInfo() {
-        final String versionJson = String.format(
-            "{\"server\":\"%s\",\"firmware\":\"%s\"}",
-            ServerConfig.APP_VERSION,
-            firmwareVersion.get()
+        final String versionJson = "{\"server\":\"%s\",\"firmware\":\"%s\"}".formatted(
+                ServerConfig.APP_VERSION,
+                firmwareVersion.get()
         );
         final String message = "VERSION_INFO:" + versionJson;
         connectionManager.broadcastToWebClients(message);
