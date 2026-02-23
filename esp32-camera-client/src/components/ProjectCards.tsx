@@ -8,7 +8,7 @@
  * @copyright   (C) 2026 SimSimEEE - All Rights Reserved.
  */
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
     ShoppingCart,
     CreditCard,
@@ -18,15 +18,16 @@ import {
     MessageSquare,
     Github,
     ExternalLink,
-    ChevronDown,
-    ChevronUp,
     Layers,
     AlertTriangle,
     BarChart2,
     CheckCircle2,
     UserCog,
     Lightbulb,
+    X,
+    Play,
 } from "lucide-react";
+import CameraViewer from "./CameraViewer";
 
 interface Metric {
     label: string;
@@ -388,11 +389,23 @@ const projects: Project[] = [
 ];
 
 export const ProjectCards = () => {
-    const [expandedId, setExpandedId] = useState<number | null>(null);
+    const [activePanelId, setActivePanelId] = useState<number | null>(null);
+    const panelRef = useRef<HTMLDivElement>(null);
 
-    const toggleExpand = (id: number) => {
-        setExpandedId((prev) => (prev === id ? null : id));
+    const togglePanel = (id: number) => {
+        setActivePanelId((prev) => (prev === id ? null : id));
     };
+
+    const activeProject = projects.find((p) => p.id === activePanelId) ?? null;
+
+    // 패널 열릴 때 스크롤
+    useEffect(() => {
+        if (activePanelId !== null && panelRef.current) {
+            setTimeout(() => {
+                panelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 100);
+        }
+    }, [activePanelId]);
 
     return (
         <section id="projects" className="section-container bg-gray-950">
@@ -403,30 +416,28 @@ export const ProjectCards = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {projects.map((project) => {
                     const Icon = project.icon;
-                    const isExpanded = expandedId === project.id;
-                    const hasDetail =
-                        (project.architecture?.length ?? 0) > 0 ||
-                        (project.challenges?.length ?? 0) > 0 ||
-                        (project.metrics?.length ?? 0) > 0 ||
-                        (project.problemSolving?.length ?? 0) > 0;
+                    const isActive = activePanelId === project.id;
                     const isGithubLink = project.link?.includes("github.com");
 
                     return (
                         <div
                             key={project.id}
                             className={`card flex flex-col transition-all duration-300 ${
-                                isExpanded
+                                isActive
                                     ? "ring-1 ring-primary-500/50 shadow-lg shadow-primary-900/20"
                                     : "hover:scale-[1.02]"
                             }`}
                         >
                             {/* Header */}
                             <div className="flex items-start justify-between mb-4">
-                                <div
-                                    className={`p-3 bg-gradient-to-br ${project.color} rounded-lg`}
+                                <button
+                                    onClick={() => togglePanel(project.id)}
+                                    className={`relative group p-3 bg-gradient-to-br ${project.color} rounded-lg transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/20`}
+                                    title="상세 / 데모 보기"
                                 >
                                     <Icon className="w-6 h-6 text-white" />
-                                </div>
+                                    <Play className="absolute -bottom-1 -right-1 w-3 h-3 text-white fill-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </button>
                                 {project.link && (
                                     <a
                                         href={project.link}
@@ -475,7 +486,7 @@ export const ProjectCards = () => {
                             </ul>
 
                             {/* Tags */}
-                            <div className="flex flex-wrap gap-2 mb-4">
+                            <div className="flex flex-wrap gap-2 mt-auto mb-3">
                                 {project.tags.map((tag) => (
                                     <span
                                         key={tag}
@@ -486,180 +497,204 @@ export const ProjectCards = () => {
                                 ))}
                             </div>
 
-                            {/* Expandable Detail Section */}
-                            {hasDetail && (
-                                <>
-                                    {/* Expand Toggle Button */}
-                                    <button
-                                        onClick={() => toggleExpand(project.id)}
-                                        className="mt-auto flex items-center justify-center gap-1 w-full py-2 text-xs text-gray-500 hover:text-primary-400 border-t border-gray-800 hover:border-primary-800 transition-colors"
-                                    >
-                                        {isExpanded ? (
-                                            <>
-                                                <ChevronUp className="w-3.5 h-3.5" />
-                                                접기
-                                            </>
-                                        ) : (
-                                            <>
-                                                <ChevronDown className="w-3.5 h-3.5" />
-                                                자세히 보기
-                                            </>
-                                        )}
-                                    </button>
-
-                                    {/* Expanded Content */}
-                                    <div
-                                        className={`overflow-hidden transition-all duration-300 ${
-                                            isExpanded
-                                                ? "max-h-[1400px] opacity-100 mt-4"
-                                                : "max-h-0 opacity-0"
-                                        }`}
-                                    >
-                                        {/* Metrics */}
-                                        {project.metrics && project.metrics.length > 0 && (
-                                            <div className="mb-4">
-                                                <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
-                                                    <BarChart2 className="w-3.5 h-3.5 text-primary-400" />
-                                                    Key Metrics
-                                                </h4>
-                                                <div className="grid grid-cols-3 gap-2">
-                                                    {project.metrics.map((m, i) => (
-                                                        <div
-                                                            key={i}
-                                                            className="bg-gray-900 rounded-lg p-2 text-center border border-gray-800"
-                                                        >
-                                                            <p className="text-primary-400 font-bold text-sm">
-                                                                {m.value}
-                                                            </p>
-                                                            <p className="text-gray-600 text-[10px] mt-0.5">
-                                                                {m.label}
-                                                            </p>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Architecture */}
-                                        {project.architecture &&
-                                            project.architecture.length > 0 && (
-                                                <div className="mb-4">
-                                                    <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
-                                                        <Layers className="w-3.5 h-3.5 text-cyan-400" />
-                                                        Architecture
-                                                    </h4>
-                                                    <ul className="space-y-1.5">
-                                                        {project.architecture.map((item, i) => (
-                                                            <li
-                                                                key={i}
-                                                                className="flex items-start gap-2 text-xs text-gray-500"
-                                                            >
-                                                                <span className="text-cyan-600 mt-0.5 shrink-0">
-                                                                    ◆
-                                                                </span>
-                                                                <span>{item}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            )}
-
-                                        {/* Challenges */}
-                                        {project.challenges && project.challenges.length > 0 && (
-                                            <div className="mb-4">
-                                                <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
-                                                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-                                                    Technical Challenges
-                                                </h4>
-                                                <ul className="space-y-1.5">
-                                                    {project.challenges.map((item, i) => (
-                                                        <li
-                                                            key={i}
-                                                            className="flex items-start gap-2 text-xs text-gray-500"
-                                                        >
-                                                            <span className="text-amber-600 mt-0.5 shrink-0">
-                                                                !
-                                                            </span>
-                                                            <span>{item}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        )}
-
-                                        {/* Outcome */}
-                                        {project.outcome && project.outcome.length > 0 && (
-                                            <div className="mb-4">
-                                                <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
-                                                    <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
-                                                    Outcome
-                                                </h4>
-                                                <ul className="space-y-1.5">
-                                                    {project.outcome.map((item, i) => (
-                                                        <li
-                                                            key={i}
-                                                            className="flex items-start gap-2 text-xs text-gray-500"
-                                                        >
-                                                            <span className="text-green-600 mt-0.5 shrink-0">
-                                                                ✓
-                                                            </span>
-                                                            <span>{item}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        )}
-
-                                        {/* Problem Solving */}
-                                        {project.problemSolving &&
-                                            project.problemSolving.length > 0 && (
-                                                <div>
-                                                    <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">
-                                                        <Lightbulb className="w-3.5 h-3.5 text-yellow-400" />
-                                                        Problem Solving
-                                                    </h4>
-                                                    <div className="space-y-3">
-                                                        {project.problemSolving.map((ps, i) => (
-                                                            <div
-                                                                key={i}
-                                                                className="rounded-lg border border-gray-800 bg-gray-900/60 overflow-hidden"
-                                                            >
-                                                                <div className="flex items-start gap-2 px-3 py-2 border-b border-gray-800">
-                                                                    <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-900/50 text-red-400 border border-red-800/50">
-                                                                        문제
-                                                                    </span>
-                                                                    <p className="text-xs text-gray-400 leading-relaxed">
-                                                                        {ps.problem}
-                                                                    </p>
-                                                                </div>
-                                                                <div className="flex items-start gap-2 px-3 py-2 border-b border-gray-800">
-                                                                    <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-900/50 text-blue-400 border border-blue-800/50">
-                                                                        접근
-                                                                    </span>
-                                                                    <p className="text-xs text-gray-500 leading-relaxed">
-                                                                        {ps.approach}
-                                                                    </p>
-                                                                </div>
-                                                                <div className="flex items-start gap-2 px-3 py-2">
-                                                                    <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-900/50 text-green-400 border border-green-800/50">
-                                                                        해결
-                                                                    </span>
-                                                                    <p className="text-xs text-gray-500 leading-relaxed">
-                                                                        {ps.solution}
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-                                    </div>
-                                </>
-                            )}
+                            {/* Click hint */}
+                            <p
+                                className={`text-center text-[10px] transition-colors ${
+                                    isActive ? "text-primary-500" : "text-gray-700"
+                                }`}
+                            >
+                                {isActive ? "▲ 패널 닫기" : "아이콘 클릭 → 상세 / 데모"}
+                            </p>
                         </div>
                     );
                 })}
             </div>
+
+            {/* ─── Bottom Detail / Demo Panel ─── */}
+            {activeProject && (
+                <div
+                    ref={panelRef}
+                    className="mt-10 rounded-2xl border border-primary-800/40 bg-gray-900/60 overflow-hidden shadow-2xl shadow-primary-950/40"
+                >
+                    {/* Panel Header */}
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800 bg-gray-900/80">
+                        <div className="flex items-center gap-3">
+                            <div
+                                className={`p-2 bg-gradient-to-br ${activeProject.color} rounded-lg shrink-0`}
+                            >
+                                {(() => {
+                                    const PanelIcon = activeProject.icon;
+                                    return <PanelIcon className="w-5 h-5 text-white" />;
+                                })()}
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-gray-100">{activeProject.title}</h3>
+                                <p className="text-xs text-gray-500">
+                                    {activeProject.company} · {activeProject.period}
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setActivePanelId(null)}
+                            className="p-2 hover:bg-gray-800 rounded-lg transition-colors text-gray-500 hover:text-gray-200"
+                            title="닫기"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+
+                    {/* Panel Body */}
+                    {activeProject.id === 6 ? (
+                        /* IoT 프로젝트: 실제 라이브 데모 */
+                        <div className="p-0">
+                            <CameraViewer />
+                        </div>
+                    ) : (
+                        /* 나머지 프로젝트: 상세 정보 */
+                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Metrics */}
+                            {activeProject.metrics && activeProject.metrics.length > 0 && (
+                                <div className="md:col-span-2">
+                                    <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">
+                                        <BarChart2 className="w-3.5 h-3.5 text-primary-400" />
+                                        Key Metrics
+                                    </h4>
+                                    <div className="grid grid-cols-3 gap-3">
+                                        {activeProject.metrics.map((m, i) => (
+                                            <div
+                                                key={i}
+                                                className="bg-gray-950 rounded-xl p-3 text-center border border-gray-800"
+                                            >
+                                                <p className="text-primary-400 font-bold text-lg">
+                                                    {m.value}
+                                                </p>
+                                                <p className="text-gray-600 text-xs mt-1">
+                                                    {m.label}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Architecture */}
+                            {activeProject.architecture &&
+                                activeProject.architecture.length > 0 && (
+                                    <div>
+                                        <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                                            <Layers className="w-3.5 h-3.5 text-cyan-400" />
+                                            Architecture
+                                        </h4>
+                                        <ul className="space-y-2">
+                                            {activeProject.architecture.map((item, i) => (
+                                                <li
+                                                    key={i}
+                                                    className="flex items-start gap-2 text-xs text-gray-500"
+                                                >
+                                                    <span className="text-cyan-600 mt-0.5 shrink-0">
+                                                        ◆
+                                                    </span>
+                                                    <span>{item}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                            {/* Challenges */}
+                            {activeProject.challenges &&
+                                activeProject.challenges.length > 0 && (
+                                    <div>
+                                        <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                                            <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                                            Technical Challenges
+                                        </h4>
+                                        <ul className="space-y-2">
+                                            {activeProject.challenges.map((item, i) => (
+                                                <li
+                                                    key={i}
+                                                    className="flex items-start gap-2 text-xs text-gray-500"
+                                                >
+                                                    <span className="text-amber-600 mt-0.5 shrink-0">
+                                                        !
+                                                    </span>
+                                                    <span>{item}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                            {/* Outcome */}
+                            {activeProject.outcome && activeProject.outcome.length > 0 && (
+                                <div>
+                                    <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                                        <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
+                                        Outcome
+                                    </h4>
+                                    <ul className="space-y-2">
+                                        {activeProject.outcome.map((item, i) => (
+                                            <li
+                                                key={i}
+                                                className="flex items-start gap-2 text-xs text-gray-500"
+                                            >
+                                                <span className="text-green-600 mt-0.5 shrink-0">
+                                                    ✓
+                                                </span>
+                                                <span>{item}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {/* Problem Solving */}
+                            {activeProject.problemSolving &&
+                                activeProject.problemSolving.length > 0 && (
+                                    <div className="md:col-span-2">
+                                        <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">
+                                            <Lightbulb className="w-3.5 h-3.5 text-yellow-400" />
+                                            Problem Solving
+                                        </h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            {activeProject.problemSolving.map((ps, i) => (
+                                                <div
+                                                    key={i}
+                                                    className="rounded-xl border border-gray-800 bg-gray-950 overflow-hidden"
+                                                >
+                                                    <div className="flex items-start gap-2 px-3 py-2 border-b border-gray-800">
+                                                        <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-900/50 text-red-400 border border-red-800/50">
+                                                            문제
+                                                        </span>
+                                                        <p className="text-xs text-gray-400 leading-relaxed">
+                                                            {ps.problem}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-start gap-2 px-3 py-2 border-b border-gray-800">
+                                                        <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-900/50 text-blue-400 border border-blue-800/50">
+                                                            접근
+                                                        </span>
+                                                        <p className="text-xs text-gray-500 leading-relaxed">
+                                                            {ps.approach}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-start gap-2 px-3 py-2">
+                                                        <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-900/50 text-green-400 border border-green-800/50">
+                                                            해결
+                                                        </span>
+                                                        <p className="text-xs text-gray-500 leading-relaxed">
+                                                            {ps.solution}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                        </div>
+                    )}
+                </div>
+            )}
         </section>
     );
 };

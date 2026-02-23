@@ -37,11 +37,26 @@ export const Hero = () => {
                     <span className="text-primary-400 font-semibold">심우근</span>
                 </p>
 
-                <p className="text-lg text-gray-500 max-w-3xl mx-auto mb-12">
-                    LNG 터미널 전기설계 엔지니어에서 MSA 백엔드 개발자로 전향.
-                    <br />
-                    시스템의 정밀함과 설계 안정성을 체득하여 결제·보안·IoT 시스템을 구축합니다.
+                <p className="text-base text-gray-500 mb-6">
+                    엔지니어의 정밀함 × 개발자의 확장성
                 </p>
+
+                {/* Tech / Domain Tags */}
+                <div className="flex flex-wrap gap-2 justify-center max-w-2xl mx-auto mb-12">
+                    {[
+                        "TypeScript", "Node.js", "Java",
+                        "AWS Lambda", "DynamoDB", "Elasticsearch",
+                        "WebSocket", "Docker", "MSA",
+                        "REST API", "Python", "ESP32",
+                    ].map((tag) => (
+                        <span
+                            key={tag}
+                            className="px-3 py-1 bg-gray-800/60 border border-gray-700/50 text-gray-400 text-sm rounded-full font-mono hover:border-primary-600/50 hover:text-primary-400 transition-colors"
+                        >
+                            {tag}
+                        </span>
+                    ))}
+                </div>
 
                 {/* CTA Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">

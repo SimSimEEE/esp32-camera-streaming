@@ -21,8 +21,9 @@ export const Contact = () => {
             </h2>
 
             <div className="max-w-4xl mx-auto">
-                <p className="text-center text-gray-400 mb-12 text-lg">
-                    새로운 프로젝트나 협업 기회에 대해 이야기하고 싶으시다면 언제든 연락주세요.
+                <p className="text-center text-gray-400 mb-12 text-lg tracking-wide">
+                    새로운 도전, 기술적인 아키텍처 논의, 협업 제안 —{" "}
+                    <span className="text-gray-200">언제든 환영합니다.</span>
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -78,15 +79,15 @@ export const Contact = () => {
                 <div className="mt-12 card bg-gradient-to-br from-primary-900/10 to-cyan-900/10 border-primary-800/30">
                     <div className="text-center">
                         <h3 className="text-2xl font-bold mb-4 text-white">
-                            함께 만들어가고 싶습니다
+                            하드웨어의 정밀함으로 소프트웨어의 확장성을 설계합니다.
                         </h3>
                         <p className="text-gray-400 max-w-2xl mx-auto">
-                            전기설계 엔지니어에서 백엔드 개발자로 전향한 저의 여정은 "시스템 사고"의
-                            확장이었습니다.
+                            전기설계 엔지니어로서 체득한 무결성에 대한 집요함을 백엔드 아키텍처에
+                            녹여냅니다.
                             <br />
-                            정밀한 회로 설계에서 배운 안정성과 MSA 아키텍처의 확장성을 결합하여,
+                            안정적인 회로가 도시의 전력을 책임지듯, 견고하고 유연한 MSA를 통해
                             <br />
-                            견고하고 유연한 시스템을 설계합니다.
+                            비즈니스의 지속 가능성을 뒷받침합니다.
                         </p>
                     </div>
                 </div>

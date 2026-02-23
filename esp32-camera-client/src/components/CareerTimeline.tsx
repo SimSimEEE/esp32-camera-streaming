@@ -51,11 +51,11 @@ const milestones: Milestone[] = [
     },
     {
         id: 2,
-        phase: "The Transition",
+        phase: "The Expansion",
         period: "2023.07 - 2023.08",
         title: "SW-AI Lab 부트캠프",
         company: "크래프톤정글 2기",
-        description: "하드웨어 로직을 소프트웨어 알고리즘으로 치환",
+        description: "하드웨어 로직을 소프트웨어 알고리즘으로 치환 — 도메인 확장",
         icon: Code,
         highlights: [
             "동시 편집 협업툴 개발 (백엔드/프론트엔드)",
@@ -68,7 +68,7 @@ const milestones: Milestone[] = [
         impact: [
             "실시간 동시 편집 갱리 복잡도 해결 → 충돌 처리 로직 직접 설계",
             "AI 제안 기능 사용자 만족도 평가 시연 현장에서 긍정적 피드백",
-            "부트코프 통해 직군모델 전환에서 개발자로의 커리어 피벗",
+            "부트캠프를 통한 소프트웨어 도메인으로의 커리어 확장 완료",
         ],
     },
     {

@@ -11,7 +11,6 @@
 import { Hero } from "./components/Hero";
 import { CareerTimeline } from "./components/CareerTimeline";
 import { ProjectCards } from "./components/ProjectCards";
-import CameraViewer from "./components/CameraViewer";
 import { TechStack } from "./components/TechStack";
 import { Contact } from "./components/Contact";
 import { Footer } from "./components/Footer";
@@ -22,9 +21,6 @@ const App = () => {
             <Hero />
             <CareerTimeline />
             <ProjectCards />
-            <section id="iot-project" className="py-20">
-                <CameraViewer />
-            </section>
             <TechStack />
             <Contact />
             <Footer />
