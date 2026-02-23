@@ -20,6 +20,15 @@ PATCH: Bug fixes, backward-compatible
 
 ## Version History
 
+### v1.15.0 (2026-02-23)
+
+**Type**: MINOR (Server)
+
+**Changes**:
+
+- upgrade Java 17->21 & refactor portfolio UI
+
+
 ### v1.14.0 (2026-02-19)
 
 **Type**: MINOR (Server)

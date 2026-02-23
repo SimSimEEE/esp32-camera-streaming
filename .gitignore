@@ -57,3 +57,5 @@ __pycache__/
 
 # Configuration files (deployment only)
 nginx.conf
+.vercel
+.env*.local
