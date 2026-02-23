@@ -20,6 +20,15 @@ PATCH: Bug fixes, backward-compatible
 
 ## Version History
 
+### v1.15.1 (2026-02-23)
+
+**Type**: PATCH (Server)
+
+**Changes**:
+
+- update portfolio UI components
+
+
 ### v1.15.0 (2026-02-23)
 
 **Type**: MINOR (Server)
