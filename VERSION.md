@@ -20,6 +20,15 @@ PATCH: Bug fixes, backward-compatible
 
 ## Version History
 
+### v1.16.0 (2026-02-24)
+
+**Type**: MINOR (Server)
+
+**Changes**:
+
+- enhance Career-IoT integration and improve UX
+
+
 ### v1.15.1 (2026-02-23)
 
 **Type**: PATCH (Server)
