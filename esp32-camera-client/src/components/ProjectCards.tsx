@@ -332,7 +332,7 @@ const projects: Project[] = [
             },
             {
                 problem:
-                    "글로벌 QR오더 요청 급증 시 Lambda cold start로 원시적 응답 지연 및 사용자 이탈",
+                    "글로벌 QR오더 요청 급증 시 Lambda cold start로 일시적 응답 지연 및 사용자 이탈",
                 approach:
                     "Serverless cold start 특성 분석 → 주문 메타데이터 캐싱으로 디펜던시 주입 제거, 핵심 함수 프로비저닝 적용 검토",
                 solution:
@@ -405,6 +405,11 @@ export const ProjectCards = () => {
     const panelRef = useRef<HTMLDivElement>(null);
 
     const togglePanel = (id: number) => {
+        // ESP32-CAM IoT 시스템(id=6)을 클릭하면 IoTDashboard로 이동
+        if (id === 6) {
+            window.location.hash = "#iot-project";
+            return;
+        }
         setActivePanelId((prev) => (prev === id ? null : id));
     };
 
@@ -434,7 +439,8 @@ export const ProjectCards = () => {
                     return (
                         <div
                             key={project.id}
-                            className={`card flex flex-col transition-all duration-300 ${
+                            onClick={() => togglePanel(project.id)}
+                            className={`card flex flex-col transition-all duration-300 cursor-pointer ${
                                 isActive
                                     ? "ring-1 ring-primary-500/50 shadow-lg shadow-primary-900/20"
                                     : "hover:scale-[1.02]"
@@ -442,19 +448,18 @@ export const ProjectCards = () => {
                         >
                             {/* Header */}
                             <div className="flex items-start justify-between mb-4">
-                                <button
-                                    onClick={() => togglePanel(project.id)}
-                                    className={`relative group p-3 bg-gradient-to-br ${project.color} rounded-lg transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/20`}
-                                    title="상세 / 데모 보기"
+                                <div
+                                    className={`relative group p-3 bg-gradient-to-br ${project.color} rounded-lg transition-all`}
                                 >
                                     <Icon className="w-6 h-6 text-white" />
                                     <Play className="absolute -bottom-1 -right-1 w-3 h-3 text-white fill-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </button>
+                                </div>
                                 {project.link && (
                                     <a
                                         href={project.link}
                                         target="_blank"
                                         rel="noopener noreferrer"
+                                        onClick={(e) => e.stopPropagation()}
                                         className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
                                         title={isGithubLink ? "GitHub Repository" : "외부 링크"}
                                     >
@@ -468,32 +473,32 @@ export const ProjectCards = () => {
                             </div>
 
                             {/* Title & Company */}
-                            <h3 className="text-xl font-bold mb-2 transition-colors">
+                            <h3 className="text-3xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-200 to-primary-300 transition-colors">
                                 {project.title}
                             </h3>
-                            <p className="text-sm text-primary-500 font-semibold mb-1">
+                            <p className="text-lg text-primary-100 font-bold mb-1 bg-gradient-to-r from-primary-900/40 to-transparent px-3 py-1 rounded inline-block">
                                 {project.company}
                             </p>
-                            <p className="text-xs text-gray-600 mb-2">{project.period}</p>
+                            <p className="text-base text-gray-400 mb-2">{project.period}</p>
                             {/* Role */}
-                            <div className="flex items-start gap-1.5 mb-4">
-                                <UserCog className="w-3 h-3 text-gray-600 mt-0.5 shrink-0" />
-                                <p className="text-xs text-gray-600 leading-relaxed">
+                            <div className="flex items-start gap-1.5 mb-4 bg-gray-800/50 px-3 py-2 rounded-lg border border-primary-500/30">
+                                <UserCog className="w-4 h-4 text-primary-300 mt-0.5 shrink-0 font-bold" />
+                                <p className="text-base text-primary-200 font-bold leading-relaxed">
                                     {project.role}
                                 </p>
                             </div>
 
                             {/* Description */}
-                            <p className="text-sm text-gray-400 mb-4">{project.description}</p>
+                            <p className="text-base text-gray-300 mb-4">{project.description}</p>
 
                             {/* Highlights */}
                             <ul className="space-y-2 mb-4">
                                 {project.highlights.map((highlight, idx) => (
                                     <li
                                         key={idx}
-                                        className="flex items-start gap-2 text-xs text-gray-500"
+                                        className="flex items-start gap-2 text-base text-gray-300"
                                     >
-                                        <span className="text-primary-500 mt-0.5">▸</span>
+                                        <span className="text-primary-400 mt-0.5 font-bold">▸</span>
                                         <span>{highlight}</span>
                                     </li>
                                 ))}
@@ -504,7 +509,7 @@ export const ProjectCards = () => {
                                 {project.tags.map((tag) => (
                                     <span
                                         key={tag}
-                                        className="px-2 py-1 bg-gray-800 text-gray-400 text-xs rounded-md"
+                                        className="px-2.5 py-1 bg-gray-800/70 text-cyan-300 text-sm font-semibold rounded-full border border-gray-700/80"
                                     >
                                         {tag}
                                     </span>
@@ -517,7 +522,7 @@ export const ProjectCards = () => {
                                     isActive ? "text-primary-500" : "text-gray-700"
                                 }`}
                             >
-                                {isActive ? "▲ 패널 닫기" : "아이콘 클릭 → 상세 / 데모"}
+                                {isActive ? "▲ 패널 닫기" : project.id === 6 ? "클릭 → IoT 데모 이동" : "클릭 → 상세 / 데모"}
                             </p>
                         </div>
                     );
@@ -569,20 +574,20 @@ export const ProjectCards = () => {
                             {/* Metrics */}
                             {activeProject.metrics && activeProject.metrics.length > 0 && (
                                 <div className="md:col-span-2">
-                                    <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">
-                                        <BarChart2 className="w-3.5 h-3.5 text-primary-400" />
-                                        Key Metrics
+                                    <h4 className="flex items-center gap-1.5 text-base font-bold text-primary-200 mb-3 uppercase tracking-wider">
+                                        <BarChart2 className="w-5 h-5 text-primary-300" />
+                                        핵심 지표
                                     </h4>
                                     <div className="grid grid-cols-3 gap-3">
                                         {activeProject.metrics.map((m, i) => (
                                             <div
                                                 key={i}
-                                                className="bg-gray-950 rounded-xl p-3 text-center border border-gray-800"
+                                                className="bg-gradient-to-br from-primary-900/50 to-cyan-900/30 rounded-xl p-4 text-center border-2 border-primary-500/50 shadow-lg shadow-primary-900/30"
                                             >
-                                                <p className="text-primary-400 font-bold text-lg">
+                                                <p className="text-primary-100 font-black text-3xl">
                                                     {m.value}
                                                 </p>
-                                                <p className="text-gray-600 text-xs mt-1">
+                                                <p className="text-primary-300 text-sm mt-1 font-semibold">
                                                     {m.label}
                                                 </p>
                                             </div>

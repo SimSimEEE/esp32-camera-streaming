@@ -1,396 +1,256 @@
 /**
  * `IoTDashboard.tsx`
- * - Real-time IoT monitoring dashboard showcasing ESP32-CAM project
+ * - ESP32-CAM IoT 시스템 프로젝트 상세 정보
  *
  * @author      Sim Woo-Keun <smileteeth14@gmail.com>
- * @date        2026-02-18 initial version
+ * @date        2026-02-23 refactored as project detail view
  *
  * @copyright   (C) 2026 SimSimEEE - All Rights Reserved.
  */
 
-import { useState, useEffect, useRef } from "react";
 import {
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-} from "recharts";
-import { Camera, Activity, Power, Rotate3D, Shield, Users, Wifi, WifiOff } from "lucide-react";
+    MessageSquare,
+    Github,
+    Lightbulb,
+    BarChart2,
+    Layers,
+    AlertTriangle,
+    CheckCircle2,
+} from "lucide-react";
+import { CameraViewer } from "./CameraViewer";
 
-// Mock sensor data
-const generateSensorData = () => {
-    const data = [];
-    for (let i = 0; i < 20; i++) {
-        data.push({
-            time: `${i}s`,
-            temperature: Math.floor(Math.random() * 10) + 20,
-            viewers: Math.floor(Math.random() * 5) + 1,
-        });
-    }
-    return data;
+const esp32Project = {
+    id: 6,
+    title: "ESP32-CAM IoT 시스템",
+    company: "개인 프로젝트",
+    period: "2026.02",
+    role: "풀스택 설계·개발 (Firmware · Java Server · Python AI · React Client)",
+    description:
+        "ESP32-CAM 기반 실시간 영상 스트리밍, Race Condition 방지, AI 모션 감지 풀스택 구현",
+    icon: MessageSquare,
+    color: "from-primary-500 to-blue-500",
+    tags: ["Java", "WebSocket", "ESP32", "Python", "Docker", "React", "AI"],
+    highlights: [
+        "WebSocket 기반 실시간 양방향 통신 및 다중 시청자 브로드캐스트",
+        "Java Semaphore/AtomicReference로 다수 클라이언트 동시 제어권 충돌 방지",
+        "Python AI Analyzer가 프레임 분석 후 BoundingBox를 역방향으로 Canvas에 오버레이",
+        "Git pre-commit Hook 기반 자동 버전 bump 및 DuckDNS + SSL 프로덕션 배포",
+    ],
+    link: "https://github.com/SimSimEEE/esp32-camera-streaming",
+    architecture: [
+        "ESP32-CAM → Java WebSocket Server → React Client 3-tier 풀스택",
+        "Java Semaphore로 제어 요청 직렬화, AtomicReference로 제어권 원자 교체",
+        "Python AI Analyzer: 프레임 구독 → 분석 → BoundingBox JSON 역방향 push",
+        "Docker Compose로 Java 서버·Python AI·Nginx 단일 EC2 운영",
+    ],
+    challenges: [
+        "다수 클라이언트 동시 LED/Servo 제어 시 Race Condition 재현 및 Semaphore 방지 설계",
+        "AI 분석 결과를 프레임 딜레이 없이 Canvas에 합성하는 타이밍 동기화",
+        "Git Hook 기반 자동 버전 관리 → VERSION.md → 서버·클라이언트 API로 동기화",
+    ],
+    metrics: [
+        { label: "스트리밍 지연", value: "< 200ms" },
+        { label: "동시 시청자", value: "무제한" },
+        { label: "AI 감지", value: "실시간" },
+    ],
+    outcome: [
+        "백엔드 역량을 하드웨어·AI·인프라까지 확장한 풀스택 토이 프로젝트 완성",
+        "동시성 제어(Race Condition) 문제를 직접 설계·검증한 실무형 경험",
+        "EC2 + DuckDNS + SSL 기반 프로덕션 환경에 실제 서비스 중",
+    ],
+    problemSolving: [
+        {
+            problem:
+                "클라이언트 3개가 동시에 LED ON/OFF 요청 시 하드웨어가 중간 상태로 멈추거나 명령 소실",
+            approach:
+                "임계 구역(Critical Section) 문제로 정의 → Java 동시성 도구 중 단일 진입 보장 방법으로 Semaphore 검토",
+            solution:
+                "Semaphore(1)로 제어 요청 직렬화, AtomicReference로 현재 제어권 보유자를 원자적 갱신 → Race Condition 완전 차단",
+        },
+        {
+            problem:
+                "Python AI 분석 결과(BoundingBox)가 프레임보다 늦게 도착하면 Canvas가 덜컥이고, 빠르면 반쯤 해제",
+            approach:
+                "분석 딜레이와 프레임 딜레이를 통합 관리 → 오버레이를 프레임마다 갱신하지 않고 TTL 기반 유지 방식 검토",
+            solution:
+                "받은 BoundingBox에 expiresAt 타임스탬프 부여, Canvas 매 프레임에서 TTL 검사 후 만료 시에만 제거 → 진동 제거",
+        },
+    ],
 };
 
 export const IoTDashboard = () => {
-    const [ledStatus, setLedStatus] = useState(false);
-    const [motorAngle, setMotorAngle] = useState(90);
-    const [sensorData] = useState(generateSensorData());
-    const [wsConnected, setWsConnected] = useState(false);
-    const [viewerCount, setViewerCount] = useState(0);
-    const imgRef = useRef<HTMLImageElement>(null);
-    const wsRef = useRef<WebSocket | null>(null);
-
-    // WebSocket server URL (EC2 instance)
-    const WS_URL = "ws://52.79.241.244/ws/viewer";
-
-    useEffect(() => {
-        const connectWebSocket = () => {
-            try {
-                const ws = new WebSocket(WS_URL);
-                wsRef.current = ws;
-
-                ws.onopen = () => {
-                    console.log("WebSocket connected");
-                    setWsConnected(true);
-                };
-
-                ws.onmessage = (event) => {
-                    // Blob 데이터를 받아서 이미지로 변환
-                    if (event.data instanceof Blob) {
-                        const url = URL.createObjectURL(event.data);
-                        if (imgRef.current) {
-                            const oldUrl = imgRef.current.src;
-                            imgRef.current.src = url;
-                            // 메모리 누수 방지를 위해 이전 URL 해제
-                            if (oldUrl.startsWith("blob:")) {
-                                URL.revokeObjectURL(oldUrl);
-                            }
-                        }
-                    } else if (typeof event.data === "string") {
-                        // 텍스트 메시지 처리 (viewer count 등)
-                        try {
-                            const data = JSON.parse(event.data);
-                            if (data.viewers !== undefined) {
-                                setViewerCount(data.viewers);
-                            }
-                        } catch (e) {
-                            console.log("Non-JSON message:", event.data);
-                        }
-                    }
-                };
-
-                ws.onerror = (error) => {
-                    console.error("WebSocket error:", error);
-                    setWsConnected(false);
-                };
-
-                ws.onclose = () => {
-                    console.log("WebSocket disconnected");
-                    setWsConnected(false);
-                    // 3초 후 재연결 시도
-                    setTimeout(connectWebSocket, 3000);
-                };
-            } catch (error) {
-                console.error("WebSocket connection error:", error);
-                setWsConnected(false);
-            }
-        };
-
-        connectWebSocket();
-
-        return () => {
-            if (wsRef.current) {
-                wsRef.current.close();
-            }
-        };
-    }, []);
-
-    // LED 제어
-    const handleLedToggle = () => {
-        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-            wsRef.current.send(
-                JSON.stringify({
-                    type: "control",
-                    action: "led",
-                    value: !ledStatus,
-                }),
-            );
-            setLedStatus(!ledStatus);
-        }
-    };
-
-    // Motor 제어
-    const handleMotorChange = (angle: number) => {
-        setMotorAngle(angle);
-        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-            wsRef.current.send(
-                JSON.stringify({
-                    type: "control",
-                    action: "motor",
-                    value: angle,
-                }),
-            );
-        }
-    };
+    const project = esp32Project;
+    const Icon = project.icon;
 
     return (
-        <section
-            id="iot-project"
-            className="section-container bg-gradient-to-b from-gray-950 to-gray-900"
-        >
-            <div className="mb-12">
-                <div className="flex items-center justify-center gap-3 mb-4">
-                    <Camera className="w-8 h-8 text-primary-400" />
-                    <h2 className="text-3xl md:text-4xl font-bold">
-                        Real-time <span className="text-primary-400">IoT Monitoring</span>
-                    </h2>
-                </div>
-                <p className="text-center text-gray-400 max-w-2xl mx-auto">
-                    ESP32-CAM 기반 실시간 영상 스트리밍 및 제어 시스템
-                    <br />
-                    WebSocket, Race Condition 방지, 자동 버전 관리 적용
-                </p>
+        <section id="iot-project" className="section-container bg-gray-950">
+            {/* Connection from Career Timeline */}
+            <div className="flex items-center justify-center mb-8 -mt-8">
+                <div className="h-16 w-0.5 bg-gradient-to-b from-transparent via-cyan-500 to-cyan-500/50"></div>
             </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Live Stream Area */}
-                <div className="lg:col-span-2 card">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-xl font-semibold flex items-center gap-2">
-                            <Wifi className="w-5 h-5 text-green-500" />
-                            Live Stream
-                            <span className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded-full ml-2">
-                                ONLINE
-                            </span>
-                        </h3>
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <Users className="w-4 h-4" />
-                            <span>{sensorData[sensorData.length - 1]?.viewers || 1} viewers</span>
+            <div className="rounded-2xl border border-primary-800/40 bg-gray-900/60 overflow-hidden shadow-2xl shadow-primary-950/40">
+                {/* Panel Header */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800 bg-gray-900/80">
+                    <div className="flex items-center gap-3">
+                        <div
+                            className={`p-2 bg-gradient-to-br ${project.color} rounded-lg shrink-0`}
+                        >
+                            <Icon className="w-5 h-5 text-white" />
                         </div>
-                    </div>
-
-                    {/* Video Placeholder */}
-                    <div className="relative aspect-video bg-gray-950 rounded-lg overflow-hidden border border-gray-800 mb-4">
-                        {wsConnected ? (
-                            <img
-                                ref={imgRef}
-                                alt="ESP32-CAM Stream"
-                                className="w-full h-full object-contain"
-                            />
-                        ) : (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="text-center">
-                                    <WifiOff className="w-16 h-16 text-gray-700 mx-auto mb-4" />
-                                    <p className="text-gray-600">WebSocket 연결 대기 중...</p>
-                                    <p className="text-sm text-gray-700 mt-2">{WS_URL}</p>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Connection Status */}
-                        <div className="absolute top-4 right-4">
-                            <div
-                                className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${
-                                    wsConnected
-                                        ? "bg-green-500/20 border border-green-500/50"
-                                        : "bg-red-500/20 border border-red-500/50"
-                                }`}
-                            >
-                                <div
-                                    className={`w-2 h-2 rounded-full ${
-                                        wsConnected ? "bg-green-500 animate-pulse" : "bg-red-500"
-                                    }`}
-                                />
-                                <span
-                                    className={`text-xs font-medium ${
-                                        wsConnected ? "text-green-400" : "text-red-400"
-                                    }`}
-                                >
-                                    {wsConnected ? "ONLINE" : "OFFLINE"}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Viewer Count */}
-                        {wsConnected && (
-                            <div className="absolute top-4 left-4">
-                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-900/80 border border-gray-700">
-                                    <Activity className="w-4 h-4 text-cyan-400" />
-                                    <span className="text-xs font-medium text-gray-300">
-                                        시청자 {viewerCount}명
-                                    </span>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Stats */}
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="bg-gray-950 p-4 rounded-lg border border-gray-800">
-                            <p className="text-xs text-gray-500 mb-1">Resolution</p>
-                            <p className="text-lg font-semibold">1024×768</p>
-                        </div>
-                        <div className="bg-gray-950 p-4 rounded-lg border border-gray-800">
-                            <p className="text-xs text-gray-500 mb-1">FPS</p>
-                            <p className="text-lg font-semibold">30 fps</p>
-                        </div>
-                        <div className="bg-gray-950 p-4 rounded-lg border border-gray-800">
-                            <p className="text-xs text-gray-500 mb-1">Latency</p>
-                            <p className="text-lg font-semibold text-green-400">45ms</p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Control Panel */}
-                <div className="space-y-6">
-                    {/* Hardware Control */}
-                    <div className="card">
-                        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                            <Power className="w-5 h-5 text-primary-400" />
-                            Hardware Control
-                        </h3>
-
-                        {/* LED Control */}
-                        <div className="mb-6">
-                            <div className="flex items-center justify-between mb-3">
-                                <span className="text-sm text-gray-400">LED Status</span>
-                                <button
-                                    onClick={handleLedToggle}
-                                    disabled={!wsConnected}
-                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                                        ledStatus ? "bg-primary-600" : "bg-gray-700"
-                                    } ${!wsConnected ? "opacity-50 cursor-not-allowed" : ""}`}
-                                >
-                                    <span
-                                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                            ledStatus ? "translate-x-6" : "translate-x-1"
-                                        }`}
-                                    />
-                                </button>
-                            </div>
-                            <div className="text-xs text-gray-600">
-                                {ledStatus ? "LED ON" : "LED OFF"}
-                            </div>
-                        </div>
-
-                        {/* Motor Control */}
                         <div>
-                            <div className="flex items-center justify-between mb-3">
-                                <span className="text-sm text-gray-400 flex items-center gap-2">
-                                    <Rotate3D className="w-4 h-4" />
-                                    Servo Angle
-                                </span>
-                                <span className="text-primary-400 font-semibold">
-                                    {motorAngle}°
-                                </span>
-                            </div>
-                            <input
-                                type="range"
-                                min="0"
-                                max="180"
-                                value={motorAngle}
-                                onChange={(e) => handleMotorChange(Number(e.target.value))}
-                                disabled={!wsConnected}
-                                className={`w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary-600 ${
-                                    !wsConnected ? "opacity-50 cursor-not-allowed" : ""
-                                }`}
-                            />
-                            <div className="flex justify-between text-xs text-gray-600 mt-1">
-                                <span>0°</span>
-                                <span>90°</span>
-                                <span>180°</span>
-                            </div>
+                            <h3 className="font-bold text-gray-100">{project.title}</h3>
+                            <p className="text-xs text-gray-500">
+                                {project.company} · {project.period}
+                            </p>
                         </div>
                     </div>
+                    <a
+                        href={project.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+                    >
+                        <Github className="w-4 h-4 text-gray-400 hover:text-white transition-colors" />
+                    </a>
+                </div>
 
-                    {/* AI Status */}
-                    <div className="card bg-gradient-to-br from-purple-900/20 to-pink-900/20 border-purple-800/50">
-                        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                            <Shield className="w-5 h-5 text-purple-400" />
-                            AI System
-                        </h3>
-                        <div className="flex items-center gap-2 mb-2">
-                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                            <span className="text-sm text-gray-300">Anomaly Detection</span>
+                {/* Panel Body */}
+                <div className="p-0">
+                    <CameraViewer />
+                </div>
+
+                {/* Project Details (Hidden, for reference) */}
+                <div className="hidden p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Metrics */}
+                    {project.metrics && project.metrics.length > 0 && (
+                        <div className="md:col-span-2">
+                            <h4 className="flex items-center gap-1.5 text-base font-bold text-primary-200 mb-3 uppercase tracking-wider">
+                                <BarChart2 className="w-5 h-5 text-primary-300" />
+                                핵심 지표
+                            </h4>
+                            <div className="grid grid-cols-3 gap-3">
+                                {project.metrics.map((m, i) => (
+                                    <div
+                                        key={i}
+                                        className="bg-gradient-to-br from-primary-900/50 to-cyan-900/30 rounded-xl p-4 text-center border-2 border-primary-500/50 shadow-lg shadow-primary-900/30"
+                                    >
+                                        <p className="text-primary-100 font-black text-3xl">
+                                            {m.value}
+                                        </p>
+                                        <p className="text-primary-300 text-sm mt-1 font-semibold">
+                                            {m.label}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                        <p className="text-xs text-gray-500">실시간 이상 감지 가동 중</p>
-                    </div>
+                    )}
 
-                    {/* System Info */}
-                    <div className="card">
-                        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                            <Activity className="w-5 h-5 text-primary-400" />
-                            System Info
-                        </h3>
-                        <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                                <span className="text-gray-500">Version</span>
-                                <span className="text-gray-300 font-mono">v1.1.1</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500">Uptime</span>
-                                <span className="text-gray-300">2d 14h 26m</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500">Memory</span>
-                                <span className="text-green-400">82% free</span>
+                    {/* Architecture */}
+                    {project.architecture && project.architecture.length > 0 && (
+                        <div>
+                            <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                                <Layers className="w-3.5 h-3.5 text-cyan-400" />
+                                Architecture
+                            </h4>
+                            <ul className="space-y-2">
+                                {project.architecture.map((item, i) => (
+                                    <li
+                                        key={i}
+                                        className="flex items-start gap-2 text-xs text-gray-500"
+                                    >
+                                        <span className="text-cyan-600 mt-0.5 shrink-0">◆</span>
+                                        <span>{item}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
+                    {/* Challenges */}
+                    {project.challenges && project.challenges.length > 0 && (
+                        <div>
+                            <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                                <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                                Technical Challenges
+                            </h4>
+                            <ul className="space-y-2">
+                                {project.challenges.map((item, i) => (
+                                    <li
+                                        key={i}
+                                        className="flex items-start gap-2 text-xs text-gray-500"
+                                    >
+                                        <span className="text-amber-600 mt-0.5 shrink-0">!</span>
+                                        <span>{item}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
+                    {/* Outcome */}
+                    {project.outcome && project.outcome.length > 0 && (
+                        <div>
+                            <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
+                                Outcome
+                            </h4>
+                            <ul className="space-y-2">
+                                {project.outcome.map((item, i) => (
+                                    <li
+                                        key={i}
+                                        className="flex items-start gap-2 text-xs text-gray-500"
+                                    >
+                                        <span className="text-green-600 mt-0.5 shrink-0">✓</span>
+                                        <span>{item}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
+                    {/* Problem Solving */}
+                    {project.problemSolving && project.problemSolving.length > 0 && (
+                        <div className="md:col-span-2">
+                            <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider">
+                                <Lightbulb className="w-3.5 h-3.5 text-yellow-400" />
+                                Problem Solving
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {project.problemSolving.map((ps, i) => (
+                                    <div
+                                        key={i}
+                                        className="rounded-xl border border-gray-800 bg-gray-950 overflow-hidden"
+                                    >
+                                        <div className="flex items-start gap-2 px-3 py-2 border-b border-gray-800">
+                                            <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-900/50 text-red-400 border border-red-800/50">
+                                                문제
+                                            </span>
+                                            <p className="text-xs text-gray-400 leading-relaxed">
+                                                {ps.problem}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-start gap-2 px-3 py-2 border-b border-gray-800">
+                                            <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-900/50 text-blue-400 border border-blue-800/50">
+                                                접근
+                                            </span>
+                                            <p className="text-xs text-gray-500 leading-relaxed">
+                                                {ps.approach}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-start gap-2 px-3 py-2">
+                                            <span className="shrink-0 mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-900/50 text-green-400 border border-green-800/50">
+                                                해결
+                                            </span>
+                                            <p className="text-xs text-gray-500 leading-relaxed">
+                                                {ps.solution}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Sensor Data Visualization */}
-            <div className="card mt-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-primary-400" />
-                    Real-time Sensor Data
-                </h3>
-                <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={sensorData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                        <XAxis dataKey="time" stroke="#6B7280" />
-                        <YAxis stroke="#6B7280" />
-                        <Tooltip
-                            contentStyle={{
-                                backgroundColor: "#1F2937",
-                                border: "1px solid #374151",
-                                borderRadius: "8px",
-                            }}
-                        />
-                        <Line
-                            type="monotone"
-                            dataKey="temperature"
-                            stroke="#0EA5E9"
-                            strokeWidth={2}
-                            dot={false}
-                        />
-                        <Line
-                            type="monotone"
-                            dataKey="viewers"
-                            stroke="#10B981"
-                            strokeWidth={2}
-                            dot={false}
-                        />
-                    </LineChart>
-                </ResponsiveContainer>
-            </div>
-
-            {/* Tech Highlights */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                <div className="card text-center">
-                    <div className="text-primary-400 font-bold text-2xl mb-2">WebSocket</div>
-                    <p className="text-sm text-gray-500">실시간 양방향 통신</p>
-                </div>
-                <div className="card text-center">
-                    <div className="text-primary-400 font-bold text-2xl mb-2">Race Condition</div>
-                    <p className="text-sm text-gray-500">다중 제어권 충돌 방지</p>
-                </div>
-                <div className="card text-center">
-                    <div className="text-primary-400 font-bold text-2xl mb-2">Auto Versioning</div>
-                    <p className="text-sm text-gray-500">Git Hook 기반 자동화</p>
+                    )}
                 </div>
             </div>
         </section>

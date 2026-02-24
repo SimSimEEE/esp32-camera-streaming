@@ -10,6 +10,7 @@
 
 import { Hero } from "./components/Hero";
 import { CareerTimeline } from "./components/CareerTimeline";
+import { IoTDashboard } from "./components/IoTDashboard";
 import { ProjectCards } from "./components/ProjectCards";
 import { TechStack } from "./components/TechStack";
 import { Contact } from "./components/Contact";
@@ -20,8 +21,9 @@ const App = () => {
         <div className="min-h-screen bg-gray-950 text-gray-100">
             <Hero />
             <CareerTimeline />
-            <ProjectCards />
+            <IoTDashboard />
             <TechStack />
+            <ProjectCards />
             <Contact />
             <Footer />
         </div>

@@ -35,8 +35,10 @@ export const Contact = () => {
                         <div className="w-12 h-12 bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-primary-900/50 transition-colors">
                             <Mail className="w-6 h-6 text-primary-400" />
                         </div>
-                        <h3 className="font-semibold mb-2 text-white">Email</h3>
-                        <p className="text-sm text-gray-400 break-all">smileteeth14@gmail.com</p>
+                        <h3 className="font-bold text-lg mb-2 text-white">Email</h3>
+                        <p className="text-base text-gray-300 whitespace-nowrap font-semibold">
+                            smileteeth14@gmail.com
+                        </p>
                     </a>
 
                     {/* Phone */}
@@ -47,8 +49,8 @@ export const Contact = () => {
                         <div className="w-12 h-12 bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-primary-900/50 transition-colors">
                             <Phone className="w-6 h-6 text-primary-400" />
                         </div>
-                        <h3 className="font-semibold mb-2 text-white">Phone</h3>
-                        <p className="text-sm text-gray-400">+82 10-2667-8213</p>
+                        <h3 className="font-bold text-lg mb-2 text-white">Phone</h3>
+                        <p className="text-base text-gray-300 font-semibold">+82 10-2667-8213</p>
                     </a>
 
                     {/* GitHub */}
@@ -61,8 +63,8 @@ export const Contact = () => {
                         <div className="w-12 h-12 bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-primary-900/50 transition-colors">
                             <Github className="w-6 h-6 text-primary-400" />
                         </div>
-                        <h3 className="font-semibold mb-2 text-white">GitHub</h3>
-                        <p className="text-sm text-gray-400">@SimSimEEE</p>
+                        <h3 className="font-bold text-lg mb-2 text-white">GitHub</h3>
+                        <p className="text-base text-gray-300 font-semibold">@SimSimEEE</p>
                     </a>
 
                     {/* Location */}
@@ -70,8 +72,8 @@ export const Contact = () => {
                         <div className="w-12 h-12 bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                             <MapPin className="w-6 h-6 text-primary-400" />
                         </div>
-                        <h3 className="font-semibold mb-2 text-white">Location</h3>
-                        <p className="text-sm text-gray-400">Seoul, South Korea</p>
+                        <h3 className="font-bold text-lg mb-2 text-white">Location</h3>
+                        <p className="text-base text-gray-300 font-semibold">Seoul, South Korea</p>
                     </div>
                 </div>
 
@@ -81,7 +83,7 @@ export const Contact = () => {
                         <h3 className="text-2xl font-bold mb-4 text-white">
                             하드웨어의 정밀함으로 소프트웨어의 확장성을 설계합니다.
                         </h3>
-                        <p className="text-gray-400 max-w-2xl mx-auto">
+                        <p className="text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed">
                             전기설계 엔지니어로서 체득한 무결성에 대한 집요함을 백엔드 아키텍처에
                             녹여냅니다.
                             <br />

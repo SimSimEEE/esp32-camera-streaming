@@ -19,9 +19,9 @@ export const Hero = () => {
             </div>
 
             {/* Content */}
-            <div className="relative z-10 section-container text-center">
+            <div className="relative z-10 section-container text-center pb-24 md:pb-0">
                 <div className="mb-6">
-                    <span className="inline-block px-4 py-2 bg-primary-900/30 border border-primary-700/50 rounded-full text-primary-400 text-sm font-medium">
+                    <span className="inline-block px-4 py-2 bg-gradient-to-r from-primary-600/40 to-cyan-600/40 border-2 border-primary-400/70 rounded-full text-primary-200 text-sm font-bold">
                         Microservice & System Integration Specialist
                     </span>
                 </div>
@@ -37,7 +37,7 @@ export const Hero = () => {
                     <span className="text-primary-400 font-semibold">심우근</span>
                 </p>
 
-                <p className="text-base text-gray-500 mb-6">엔지니어의 정밀함 × 개발자의 확장성</p>
+                <p className="text-xl text-cyan-300 mb-6 font-bold bg-gradient-to-r from-cyan-900/30 to-transparent px-4 py-2 rounded-lg inline-block">엔지니어의 정밀함 × 개발자의 확장성</p>
 
                 {/* Tech / Domain Tags */}
                 <div className="flex flex-wrap gap-2 justify-center max-w-2xl mx-auto mb-12">
@@ -57,7 +57,7 @@ export const Hero = () => {
                     ].map((tag) => (
                         <span
                             key={tag}
-                            className="px-3 py-1 bg-gray-800/60 border border-gray-700/50 text-gray-400 text-sm rounded-full font-mono hover:border-primary-600/50 hover:text-primary-400 transition-colors"
+                            className="px-3 py-1 bg-gray-800/60 border border-primary-600/30 text-primary-300 text-base font-semibold rounded-full font-mono hover:border-primary-500/70 hover:text-primary-200 transition-colors"
                         >
                             {tag}
                         </span>
@@ -81,7 +81,7 @@ export const Hero = () => {
                 </div>
 
                 {/* Contact Icons */}
-                <div className="flex gap-6 justify-center text-gray-400">
+                <div className="flex gap-6 justify-center text-gray-400 mb-8">
                     <a
                         href="mailto:smileteeth14@gmail.com"
                         className="hover:text-primary-400 transition-colors"
@@ -106,12 +106,12 @@ export const Hero = () => {
                         <Phone size={24} />
                     </a>
                 </div>
-            </div>
 
-            {/* Scroll Indicator */}
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-                <div className="w-6 h-10 border-2 border-gray-600 rounded-full p-1">
-                    <div className="w-1 h-2 bg-gray-400 rounded-full mx-auto animate-pulse-slow"></div>
+                {/* Scroll Indicator */}
+                <div className="hidden md:flex justify-center animate-bounce">
+                    <div className="w-6 h-10 border-2 border-gray-600 rounded-full p-1">
+                        <div className="w-1 h-2 bg-gray-400 rounded-full mx-auto animate-pulse-slow"></div>
+                    </div>
                 </div>
             </div>
         </section>

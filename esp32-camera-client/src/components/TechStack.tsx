@@ -12,82 +12,222 @@ import { Code2, Database, Cloud, Layers, Settings, GitBranch } from "lucide-reac
 
 interface Skill {
     name: string;
-    level: number;
-    color: string;
+    grade: "A" | "B" | "C";
+    detail: string;
+    categoryDescription: string;
 }
 
 interface SkillCategory {
     category: string;
     icon: typeof Code2;
     skills: Skill[];
-    description: string;
 }
+
+interface GradeMeta {
+    title: string;
+    definition: string;
+    chipClassName: string;
+    accentClassName: string;
+    barClassName: string;
+    score: number;
+}
+
+const gradeMeta: Record<Skill["grade"], GradeMeta> = {
+    A: {
+        title: "아키텍트/리드",
+        definition: "시스템 아키텍처 설계, 성능 최적화, 고난도 장애 대응 리딩이 가능한 수준입니다.",
+        chipClassName: "bg-emerald-500/20 text-emerald-300 border border-emerald-400/40",
+        accentClassName: "text-emerald-300",
+        barClassName: "bg-emerald-400",
+        score: 95,
+    },
+    B: {
+        title: "스페셜리스트/시니어",
+        definition:
+            "복잡한 비즈니스 로직을 독립적으로 구현하고, 베스트 프랙티스를 실무에 적용할 수 있는 수준입니다.",
+        chipClassName: "bg-blue-500/20 text-blue-300 border border-blue-400/40",
+        accentClassName: "text-blue-300",
+        barClassName: "bg-blue-400",
+        score: 75,
+    },
+    C: {
+        title: "실무형/운영 가능",
+        definition:
+            "산업 현장에서 요구되는 실무 준비 수준으로, 문서와 표준 프로세스를 기반으로 운영 환경 기능 구현 및 유지보수가 가능합니다.",
+        chipClassName: "bg-slate-500/20 text-slate-300 border border-slate-400/40",
+        accentClassName: "text-slate-300",
+        barClassName: "bg-slate-400",
+        score: 55,
+    },
+};
 
 const techStack: SkillCategory[] = [
     {
-        category: "Backend",
+        category: "백엔드",
         icon: Code2,
-        description: "Server-side development & API design",
         skills: [
-            { name: "Node.js", level: 90, color: "bg-green-500" },
-            { name: "TypeScript", level: 90, color: "bg-blue-500" },
-            { name: "Java", level: 75, color: "bg-orange-500" },
-            { name: "Spring Boot", level: 70, color: "bg-green-600" },
-            { name: "REST API", level: 90, color: "bg-cyan-500" },
+            {
+                name: "TypeScript",
+                grade: "A",
+                detail: "MSA 백엔드 서비스 다수에서 도메인 모델 설계와 API 표준화를 주도",
+                categoryDescription: "서버사이드 개발 및 API 설계",
+            },
+            {
+                name: "Node.js",
+                grade: "A",
+                detail: "결제·출입·운영정책 API의 핵심 비즈니스 로직을 서비스 단위로 설계/운영",
+                categoryDescription: "서버사이드 개발 및 API 설계",
+            },
+            {
+                name: "Java",
+                grade: "B",
+                detail: "실시간 WebSocket 서버 구축으로 다중 시청자 브로드캐스트와 제어권 동시성 처리 구현",
+                categoryDescription: "서버사이드 개발 및 API 설계",
+            },
+            {
+                name: "Spring Boot",
+                grade: "C",
+                detail: "문서 기반으로 REST API 및 계층형 구조를 구성해 운영 가능한 기능 단위 서비스 구현",
+                categoryDescription: "서버사이드 개발 및 API 설계",
+            },
+            {
+                name: "REST API",
+                grade: "A",
+                detail: "권한/정책/정산 도메인 API를 표준화해 다수 서비스에 재사용 가능한 인터페이스 제공",
+                categoryDescription: "서버사이드 개발 및 API 설계",
+            },
         ],
     },
     {
-        category: "Database",
+        category: "데이터베이스",
         icon: Database,
-        description: "Data modeling & optimization",
         skills: [
-            { name: "DynamoDB", level: 85, color: "bg-blue-600" },
-            { name: "MongoDB", level: 80, color: "bg-green-500" },
-            { name: "MySQL", level: 75, color: "bg-blue-400" },
-            { name: "Elasticsearch", level: 80, color: "bg-yellow-500" },
+            {
+                name: "DynamoDB",
+                grade: "A",
+                detail: "접근 패턴 중심 PK/GSI 설계로 조회 성능 저하 이슈를 해결하고 확장성 확보",
+                categoryDescription: "데이터 모델링 및 성능 최적화",
+            },
+            {
+                name: "MySQL",
+                grade: "B",
+                detail: "출입·주차 이력의 정합성 관리와 정기 백업 자동화를 통해 운영 안정성 강화",
+                categoryDescription: "데이터 모델링 및 성능 최적화",
+            },
+            {
+                name: "Elasticsearch",
+                grade: "B",
+                detail: "결제/BI 통계 집계용 인덱스 및 aggregation 쿼리 최적화로 탐색 성능 개선",
+                categoryDescription: "데이터 모델링 및 성능 최적화",
+            },
+            {
+                name: "PostgreSQL",
+                grade: "C",
+                detail: "프로젝트 요구사항에 맞춰 스키마를 운영하며 기능 개발과 유지보수 경험 축적",
+                categoryDescription: "데이터 모델링 및 성능 최적화",
+            },
         ],
     },
     {
-        category: "Cloud & Infrastructure",
+        category: "클라우드 & 인프라",
         icon: Cloud,
-        description: "AWS serverless architecture",
         skills: [
-            { name: "AWS Lambda", level: 85, color: "bg-orange-500" },
-            { name: "EC2", level: 75, color: "bg-orange-600" },
-            { name: "S3", level: 80, color: "bg-orange-400" },
-            { name: "SNS/SQS", level: 75, color: "bg-pink-500" },
+            {
+                name: "AWS Lambda",
+                grade: "A",
+                detail: "핵심 비즈니스 서비스의 서버리스 아키텍처 설계 및 cold start/비용 최적화 수행",
+                categoryDescription: "AWS 및 서버리스 아키텍처 운영",
+            },
+            {
+                name: "EC2",
+                grade: "B",
+                detail: "Docker Compose 기반 Java/Python/Nginx 멀티서비스 운영 환경 구축 및 배포 자동화",
+                categoryDescription: "AWS 및 서버리스 아키텍처 운영",
+            },
+            {
+                name: "S3",
+                grade: "B",
+                detail: "정적 자산 및 운영 데이터 보관 정책을 수립해 서비스 안정성 향상",
+                categoryDescription: "AWS 및 서버리스 아키텍처 운영",
+            },
+            {
+                name: "SNS/SQS",
+                grade: "B",
+                detail: "비동기 이벤트 파이프라인을 구성해 정산/알림 처리와 메인 플로우를 분리",
+                categoryDescription: "AWS 및 서버리스 아키텍처 운영",
+            },
         ],
     },
     {
-        category: "Architecture",
+        category: "아키텍처",
         icon: Layers,
-        description: "Design patterns & system design",
         skills: [
-            { name: "Microservices", level: 85, color: "bg-purple-500" },
-            { name: "Manager Pattern", level: 90, color: "bg-indigo-500" },
-            { name: "Proxy Pattern", level: 85, color: "bg-violet-500" },
-            { name: "Strategy Pattern", level: 80, color: "bg-fuchsia-500" },
+            {
+                name: "Microservices",
+                grade: "A",
+                detail: "도메인 분리·독립 배포·운영정책 모듈화를 통해 서비스 확장 가능한 구조 수립",
+                categoryDescription: "설계 패턴 및 시스템 디자인",
+            },
+            {
+                name: "Manager/Proxy Pattern",
+                grade: "A",
+                detail: "권한 제어와 비즈니스 로직을 레이어별로 분리해 유지보수성과 테스트 용이성 강화",
+                categoryDescription: "설계 패턴 및 시스템 디자인",
+            },
         ],
     },
     {
-        category: "DevOps & Tools",
+        category: "DevOps & 도구",
         icon: Settings,
-        description: "CI/CD & automation",
         skills: [
-            { name: "GitHub Actions", level: 80, color: "bg-gray-700" },
-            { name: "Travis CI", level: 75, color: "bg-yellow-600" },
-            { name: "Docker", level: 75, color: "bg-blue-500" },
-            { name: "Git", level: 90, color: "bg-red-500" },
+            {
+                name: "GitHub Actions",
+                grade: "B",
+                detail: "CI 파이프라인 자동화로 빌드/검증 프로세스를 표준화하고 배포 신뢰도 향상",
+                categoryDescription: "CI/CD 및 자동화",
+            },
+            {
+                name: "Travis CI",
+                grade: "C",
+                detail: "기존 레거시 파이프라인 유지보수와 설정 개선으로 릴리즈 안정성 유지",
+                categoryDescription: "CI/CD 및 자동화",
+            },
+            {
+                name: "Docker",
+                grade: "B",
+                detail: "서비스별 컨테이너화와 로컬/운영 환경 일관성 확보로 배포 리스크 감소",
+                categoryDescription: "CI/CD 및 자동화",
+            },
+            {
+                name: "Git",
+                grade: "B",
+                detail: "브랜치 전략과 코드리뷰 기반 협업으로 변경 이력 관리 및 품질 확보",
+                categoryDescription: "CI/CD 및 자동화",
+            },
         ],
     },
     {
-        category: "Frontend",
+        category: "프론트엔드",
         icon: GitBranch,
-        description: "Web development",
         skills: [
-            { name: "React.js", level: 80, color: "bg-cyan-400" },
-            { name: "JavaScript", level: 85, color: "bg-yellow-400" },
-            { name: "Tailwind CSS", level: 75, color: "bg-teal-500" },
+            {
+                name: "React.js",
+                grade: "B",
+                detail: "컴포넌트 기반 UI 구조화와 상태 흐름 관리를 통해 대시보드 화면을 안정적으로 구현",
+                categoryDescription: "웹 UI 구현 및 사용자 경험 개선",
+            },
+            {
+                name: "JavaScript",
+                grade: "B",
+                detail: "실시간 데이터 표시와 인터랙션 로직을 구현해 사용자 반응성을 개선",
+                categoryDescription: "웹 UI 구현 및 사용자 경험 개선",
+            },
+            {
+                name: "Tailwind CSS",
+                grade: "C",
+                detail: "디자인 토큰 기반 스타일링으로 반응형 UI를 구현하고 유지보수성 확보",
+                categoryDescription: "웹 UI 구현 및 사용자 경험 개선",
+            },
         ],
     },
 ];
@@ -96,12 +236,39 @@ export const TechStack = () => {
     return (
         <section id="skills" className="section-container bg-gray-900">
             <h2 className="section-title">
-                Tech <span className="text-primary-400">Stack</span>
+                기술 <span className="text-primary-400">스택</span>
             </h2>
+
+            <div className="max-w-5xl mx-auto mb-8 card bg-gray-900/60 backdrop-blur-sm border border-gray-700/70">
+                <h3 className="text-base font-bold text-gray-100 uppercase tracking-wider mb-4">
+                    등급 가이드 · 실무 경험 기준
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {(Object.entries(gradeMeta) as Array<[Skill["grade"], GradeMeta]>).map(
+                        ([grade, meta]) => (
+                            <div
+                                key={grade}
+                                className="rounded-lg border border-gray-700/70 bg-gray-900/50 p-3"
+                            >
+                                <div
+                                    className={`inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-base font-bold shadow-lg ${meta.chipClassName} border`}
+                                >
+                                    등급 {grade} · {meta.title}
+                                </div>
+                                <p className="mt-2 text-sm text-gray-300 leading-relaxed">
+                                    {meta.definition}
+                                </p>
+                            </div>
+                        ),
+                    )}
+                </div>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {techStack.map((category) => {
                     const Icon = category.icon;
+                    const categoryDescription = category.skills[0]?.categoryDescription ?? "";
+
                     return (
                         <div key={category.category} className="card group">
                             {/* Category Header */}
@@ -110,30 +277,59 @@ export const TechStack = () => {
                                     <Icon className="w-6 h-6 text-primary-400" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold text-white">
+                                    <h3 className="text-2xl font-bold text-white">
                                         {category.category}
                                     </h3>
-                                    <p className="text-xs text-gray-500">{category.description}</p>
+                                    <p className="text-sm text-gray-400">{categoryDescription}</p>
                                 </div>
                             </div>
 
                             {/* Skills */}
-                            <div className="space-y-4">
+                            <div className="space-y-3">
                                 {category.skills.map((skill) => (
-                                    <div key={skill.name}>
-                                        <div className="flex justify-between items-center mb-2">
-                                            <span className="text-sm text-gray-300">
-                                                {skill.name}
-                                            </span>
-                                            <span className="text-xs text-gray-500 font-mono">
-                                                {skill.level}%
-                                            </span>
+                                    <div key={skill.name} className="relative group/skill">
+                                        <div className="w-full rounded-lg bg-gray-800/70 border border-gray-700/80 hover:border-primary-500/50 transition-all duration-300 cursor-default p-3">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <span className="text-base text-primary-300 font-semibold">
+                                                    {skill.name}
+                                                </span>
+                                                <span
+                                                    className={`px-2 py-0.5 rounded-md text-xs font-bold ${gradeMeta[skill.grade].chipClassName}`}
+                                                >
+                                                    {skill.grade}
+                                                </span>
+                                            </div>
+                                            <div className="mt-2 h-2 w-full bg-gray-900 rounded-full overflow-hidden">
+                                                <div
+                                                    className={`h-full rounded-full transition-all duration-500 ${gradeMeta[skill.grade].barClassName}`}
+                                                    style={{
+                                                        width: `${gradeMeta[skill.grade].score}%`,
+                                                    }}
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
-                                            <div
-                                                className={`h-full ${skill.color} rounded-full transition-all duration-1000 ease-out`}
-                                                style={{ width: `${skill.level}%` }}
-                                            />
+
+                                        <div className="pointer-events-none absolute left-1/2 top-full mt-2 w-72 max-w-[90vw] -translate-x-1/2 opacity-0 translate-y-1 group-hover/skill:opacity-100 group-hover/skill:translate-y-0 transition-all duration-300 z-30">
+                                            <div className="rounded-xl border border-white/20 bg-gray-900/70 backdrop-blur-md shadow-2xl shadow-black/40 p-4">
+                                                <p className="text-sm uppercase tracking-wider text-gray-400 mb-1 font-semibold">
+                                                    등급
+                                                </p>
+                                                <p
+                                                    className={`text-base font-bold mb-2 ${gradeMeta[skill.grade].accentClassName}`}
+                                                >
+                                                    {skill.grade} · {gradeMeta[skill.grade].title}
+                                                </p>
+                                                <p className="text-sm text-gray-200 leading-relaxed mb-3">
+                                                    {gradeMeta[skill.grade].definition}
+                                                </p>
+
+                                                <p className="text-sm uppercase tracking-wider text-gray-400 mb-1 font-semibold">
+                                                    핵심 실무 기여
+                                                </p>
+                                                <p className="text-sm text-gray-100 leading-relaxed">
+                                                    {skill.detail}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -143,25 +339,9 @@ export const TechStack = () => {
                 })}
             </div>
 
-            {/* Highlights */}
-            <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="text-center">
-                    <div className="text-4xl font-bold text-primary-400 mb-2">2+</div>
-                    <div className="text-sm text-gray-500">Years Experience</div>
-                </div>
-                <div className="text-center">
-                    <div className="text-4xl font-bold text-primary-400 mb-2">10+</div>
-                    <div className="text-sm text-gray-500">Tech Stack</div>
-                </div>
-                <div className="text-center">
-                    <div className="text-4xl font-bold text-primary-400 mb-2">MSA</div>
-                    <div className="text-sm text-gray-500">Architecture</div>
-                </div>
-                <div className="text-center">
-                    <div className="text-4xl font-bold text-primary-400 mb-2">AWS</div>
-                    <div className="text-sm text-gray-500">Serverless</div>
-                </div>
-            </div>
+            <p className="mt-10 text-center text-sm text-gray-400">
+                각 기술 항목에 마우스를 올리면 등급 기준과 실무 기여 내용을 확인할 수 있습니다.
+            </p>
         </section>
     );
 };
