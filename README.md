@@ -52,6 +52,34 @@ esp32-camera-streaming/
     └── README.md               # 모션 감지 전용 문서
 ```
 
+---
+
+## 🎮 짐벌 제어 시스템 (기획 문서)
+
+> **🚧 개발 예정**: ESP32 기반 2축 짐벌 제어 및 임베디드 모니터링 대시보드
+
+`feature/gimbal-dashboard` 브랜치에서 다음 기능을 설계 중입니다:
+
+- **MPU6050 센서 통합**: 6축 자이로/가속도 센서 + 상보 필터
+- **PID 제어**: 정밀한 2축(Pan/Tilt) 서보 모터 제어
+- **바이너리 WebSocket**: C struct 직렬화로 JSON 대비 70% 크기 감소
+- **Three.js 3D 디지털 트윈**: 실시간 짐벌 각도 시각화
+- **시스템 텔레메트리**: CPU, 메모리, 네트워크, 전력 실시간 모니터링
+- **런타임 PID 튜닝**: 웹 UI에서 제어 파라미터 실시간 조정
+
+### 📚 설계 문서
+
+| 문서 | 설명 |
+|------|------|
+| [GIMBAL_PROJECT_OVERVIEW.md](docs/GIMBAL_PROJECT_OVERVIEW.md) | 프로젝트 목표, 시스템 구성 요소, 성공 기준 |
+| [GIMBAL_ARCHITECTURE.md](docs/GIMBAL_ARCHITECTURE.md) | FreeRTOS 태스크 설계, 3D 뷰어 아키텍처 |
+| [GIMBAL_PROTOCOL.md](docs/GIMBAL_PROTOCOL.md) | 바이너리 WebSocket 프로토콜 사양 |
+| [GIMBAL_ROADMAP.md](docs/GIMBAL_ROADMAP.md) | 6단계 구현 계획 (6-8주 예상) |
+
+**현재 상태**: ✅ 설계 완료, ⏳ 구현 대기 중
+
+---
+
 ## 🎯 시스템 아키텍처
 
 ```
