@@ -2,7 +2,7 @@
 
 **Status**: ✅ Phase 1 Complete - Ready for Testing  
 **Author**: Sim U Geun <sim@lemoncloud.io>  
-**Date**: 2025-02-03  
+**Date**: 2025-02-03
 
 ---
 
@@ -11,6 +11,7 @@
 This is the **Phase 1** implementation of the ESP32-based 2-axis gimbal control system. The goal of this phase is to establish reliable IMU sensor reading and attitude estimation using a complementary filter.
 
 ### Key Features
+
 - ✅ MPU6050 6-axis IMU sensor driver
 - ✅ Automatic sensor calibration (1000 samples)
 - ✅ Complementary filter (α=0.96) for sensor fusion
@@ -23,16 +24,18 @@ This is the **Phase 1** implementation of the ESP32-based 2-axis gimbal control 
 ## 🏗️ Architecture
 
 ### Hardware
+
 - **MCU**: ESP32-CAM (240MHz, dual-core)
 - **IMU**: MPU6050 (I2C @ 400kHz)
-  - Accelerometer: ±4G range
-  - Gyroscope: ±500°/s range
-  - Filter: 21Hz bandwidth
+    - Accelerometer: ±4G range
+    - Gyroscope: ±500°/s range
+    - Filter: 21Hz bandwidth
 - **Pins**:
-  - SDA: GPIO 21
-  - SCL: GPIO 22
+    - SDA: GPIO 21
+    - SCL: GPIO 22
 
 ### Software
+
 ```
 ┌─────────────────────────────────────────┐
 │         FreeRTOS Scheduler              │
@@ -85,6 +88,7 @@ esp32-gimbal-firmware/
 ## 🚀 Quick Start
 
 ### 1. Install PlatformIO
+
 ```bash
 # Install PlatformIO CLI
 pip install platformio
@@ -94,13 +98,16 @@ pip install platformio
 ```
 
 ### 2. Configure Wi-Fi (Optional for Phase 1)
+
 Edit `include/Config.h`:
+
 ```cpp
 #define WIFI_SSID "YourNetworkName"
 #define WIFI_PASSWORD "YourPassword"
 ```
 
 ### 3. Upload Firmware
+
 ```bash
 cd esp32-gimbal-firmware
 
@@ -115,6 +122,7 @@ pio device monitor
 ```
 
 ### 4. Expected Serial Output
+
 ```
 ==============================================
 ESP32 Gimbal Control System - Phase 1
@@ -150,6 +158,7 @@ ESP32 Gimbal Control System - Phase 1
 All configuration is in `include/Config.h`:
 
 ### I2C Settings
+
 ```cpp
 #define MPU6050_SDA_PIN 21
 #define MPU6050_SCL_PIN 22
@@ -157,6 +166,7 @@ All configuration is in `include/Config.h`:
 ```
 
 ### Filter Settings
+
 ```cpp
 #define COMPLEMENTARY_FILTER_ALPHA 0.96  // 0.0~1.0
 // Higher = trust gyro more (responsive but drifts)
@@ -164,6 +174,7 @@ All configuration is in `include/Config.h`:
 ```
 
 ### Task Settings
+
 ```cpp
 #define SENSOR_READ_INTERVAL_MS 10       // 100 Hz
 #define SENSOR_TASK_PRIORITY 4           // Highest priority
@@ -175,21 +186,25 @@ All configuration is in `include/Config.h`:
 ## 🧪 Testing
 
 ### Test 1: Sensor Connection
+
 - Upload firmware
 - Check serial output
 - Should see `[MPU6050] Sensor initialized successfully`
 
 ### Test 2: Calibration
+
 - Keep gimbal **perfectly still and level**
 - Wait for calibration to complete
 - Offsets should be small (< 0.5 for accel, < 0.01 for gyro)
 
 ### Test 3: Attitude Estimation
+
 - Tilt gimbal forward/back (pitch should change)
 - Tilt gimbal left/right (roll should change)
 - Rotate gimbal around Z-axis (yaw will drift - expected without magnetometer)
 
 ### Expected Performance
+
 - **Pitch/Roll accuracy**: ±2° (stationary)
 - **Update rate**: 100 Hz (10ms interval)
 - **Latency**: < 15ms (I2C read + filter update)
@@ -213,21 +228,25 @@ All configuration is in `include/Config.h`:
 ## 🛠️ Troubleshooting
 
 ### Problem: "Failed to find MPU6050 chip"
+
 - **Check wiring**: SDA=GPIO21, SCL=GPIO22, VCC=3.3V, GND=GND
 - **Check I2C address**: MPU6050 default is 0x68 (Adafruit library auto-detects)
 - **Test with I2C scanner**: `examples/I2CScanner.ino`
 
 ### Problem: Calibration offsets are very large
+
 - **Ensure gimbal is stationary** during calibration
 - **Check sensor orientation**: Z-axis should point up (gravity = +9.8 m/s²)
 - **Re-run calibration**: Reset ESP32 and try again
 
 ### Problem: Attitude angles are noisy
+
 - **Reduce complementary filter alpha**: Try 0.92 instead of 0.96
 - **Check for vibrations**: Sensor should be firmly mounted
 - **Increase filter bandwidth**: `MPU6050_BAND_21_HZ` → `MPU6050_BAND_10_HZ`
 
 ### Problem: Yaw drifts rapidly
+
 - **Expected behavior**: Yaw drifts without magnetometer (Phase 1 limitation)
 - **Workaround**: Reset yaw to 0 periodically (button press)
 - **Permanent fix**: Add magnetometer in Phase 4 (QMC5883L or HMC5883L)
@@ -237,24 +256,24 @@ All configuration is in `include/Config.h`:
 ## 🔜 Next Steps (Phase 2)
 
 1. **PID Controller**
-   - Implement PID class (`src/control/PIDController.cpp`)
-   - Anti-windup protection
-   - Tunable gains (Kp, Ki, Kd)
+    - Implement PID class (`src/control/PIDController.cpp`)
+    - Anti-windup protection
+    - Tunable gains (Kp, Ki, Kd)
 
 2. **Servo Control**
-   - Initialize PWM channels (GPIO 12, 13)
-   - Map PID output to servo angles
-   - Servo smoothing/slew rate limiting
+    - Initialize PWM channels (GPIO 12, 13)
+    - Map PID output to servo angles
+    - Servo smoothing/slew rate limiting
 
 3. **Control Task**
-   - Create FreeRTOS control task (Core 1, 50Hz)
-   - Read attitude → PID → Servo output
-   - Coordinate with sensor task via mutex
+    - Create FreeRTOS control task (Core 1, 50Hz)
+    - Read attitude → PID → Servo output
+    - Coordinate with sensor task via mutex
 
 4. **Testing**
-   - Manual PID tuning (serial commands)
-   - Stabilization performance measurement
-   - Servo response validation
+    - Manual PID tuning (serial commands)
+    - Stabilization performance measurement
+    - Servo response validation
 
 ---
 

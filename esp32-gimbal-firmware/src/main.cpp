@@ -12,6 +12,8 @@
 #include "../include/Config.h"
 #include "sensors/MPU6050Sensor.h"
 #include "filters/ComplementaryFilter.h"
+#include "control/PIDController.h"
+#include "control/ServoController.h"
 
 // ============================================================================
 // Global Objects
@@ -19,12 +21,16 @@
 
 MPU6050Sensor sensor;
 ComplementaryFilter filter(COMP_FILTER_ALPHA);
+PIDController pidPitch(PID_KP_PITCH, PID_KI_PITCH, PID_KD_PITCH);
+PIDController pidRoll(PID_KP_ROLL, PID_KI_ROLL, PID_KD_ROLL);
+ServoController servo;
 
 // ============================================================================
 // FreeRTOS Task Handles
 // ============================================================================
 
 TaskHandle_t sensorTaskHandle = NULL;
+TaskHandle_t controlTaskHandle = NULL;
 
 // ============================================================================
 // Shared Data (Protected by Mutex)
@@ -33,6 +39,10 @@ TaskHandle_t sensorTaskHandle = NULL;
 SemaphoreHandle_t dataMutex = NULL;
 SensorData latestSensorData;
 Attitude latestAttitude;
+
+// Target angles (setpoint for PID)
+float targetPitch = 0.0f;
+float targetRoll = 0.0f;
 
 // ============================================================================
 // Task 1: Sensor Reading Task (Core 0, 100 Hz)
@@ -84,6 +94,53 @@ void sensorTask(void* parameter) {
 }
 
 // ============================================================================
+// Task 2: Control Task (Core 1, 50 Hz)
+// ============================================================================
+
+/**
+ * Control task - PID control loop for gimbal stabilization
+ * - Priority: 4 (high) - precise timing for control loop
+ * - Core: 1 (app CPU) - separates control from sensor I/O
+ * - Interval: 20ms (50 Hz)
+ */
+void controlTask(void* parameter) {
+    const TickType_t xFrequency = pdMS_TO_TICKS(CONTROL_TASK_INTERVAL);
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    
+    unsigned long lastUpdateTime = millis();
+    
+    Serial.println("[Task:Control] Started on Core 1");
+    
+    while (true) {
+        // Calculate time delta
+        unsigned long currentTime = millis();
+        float dt = (currentTime - lastUpdateTime) / 1000.0f;  // Convert to seconds
+        lastUpdateTime = currentTime;
+        
+        // Read current attitude (thread-safe)
+        Attitude attitude;
+        if (xSemaphoreTake(dataMutex, pdMS_TO_TICKS(5)) == pdTRUE) {
+            attitude = latestAttitude;
+            xSemaphoreGive(dataMutex);
+            
+            // Convert radians to degrees for PID
+            float currentPitch = attitude.pitch * 180.0f / PI;
+            float currentRoll = attitude.roll * 180.0f / PI;
+            
+            // Compute PID output
+            float pitchOutput = pidPitch.compute(targetPitch, currentPitch, dt);
+            float rollOutput = pidRoll.compute(targetRoll, currentRoll, dt);
+            
+            // Apply to servos
+            servo.setAngles(pitchOutput, rollOutput);
+        }
+        
+        // Wait for next cycle (50 Hz)
+        vTaskDelayUntil(&xLastWakeTime, xFrequency);
+    }
+}
+
+// ============================================================================
 // Setup Function
 // ============================================================================
 
@@ -93,7 +150,8 @@ void setup() {
     delay(2000);  // Wait for serial monitor
     
     Serial.println("\n==============================================");
-    Serial.println("ESP32 Gimbal Control System - Phase 1");
+    Serial.println("ESP32 Gimbal Control System - Phase 2");
+    Serial.println("PID Control + Servo Integration");
     Serial.println("==============================================");
     
     // Initialize mutex
@@ -136,6 +194,29 @@ void setup() {
         while (true) { delay(1000); }
     }
     
+    // Initialize servo motors
+    Serial.println("\n[Setup] Initializing servo motors...");
+    if (!servo.begin(SERVO_PITCH_PIN, SERVO_ROLL_PIN, SERVO_PWM_FREQ)) {
+        Serial.println("[Setup] FATAL: Servo initialization failed");
+        while (true) { delay(1000); }
+    }
+    
+    // Create control task on Core 1
+    result = xTaskCreatePinnedToCore(
+        controlTask,             // Task function
+        "ControlTask",           // Task name
+        TASK_STACK_CONTROL,      // Stack size (3KB)
+        NULL,                    // Parameters
+        TASK_PRIORITY_CONTROL,   // Priority (4)
+        &controlTaskHandle,      // Task handle
+        1                        // Core 1
+    );
+    
+    if (result != pdPASS) {
+        Serial.println("[Setup] FATAL: Failed to create control task");
+        while (true) { delay(1000); }
+    }
+    
     Serial.println("\n[Setup] System initialization complete");
     Serial.println("==============================================\n");
 }
@@ -145,14 +226,14 @@ void setup() {
 // ============================================================================
 
 /**
- * Main loop - print attitude for debugging
- * In Phase 2, this will be replaced with PID control task
+ * Main loop - debug output and serial command processing
+ * Phase 2: Print attitude, PID output, and servo positions
  */
 void loop() {
     static unsigned long lastPrintTime = 0;
     unsigned long currentTime = millis();
     
-    // Print attitude every 500ms
+    // Print status every 500ms
     if (currentTime - lastPrintTime >= 500) {
         lastPrintTime = currentTime;
         
@@ -162,13 +243,31 @@ void loop() {
             attitude = latestAttitude;
             xSemaphoreGive(dataMutex);
             
-            // Convert radians to degrees for readability
+            // Convert radians to degrees
             float pitchDeg = attitude.pitch * 180.0f / PI;
             float rollDeg = attitude.roll * 180.0f / PI;
-            float yawDeg = attitude.yaw * 180.0f / PI;
             
-            Serial.printf("[Attitude] Pitch: %6.2f°  Roll: %6.2f°  Yaw: %6.2f°\n",
-                pitchDeg, rollDeg, yawDeg);
+            // Get PID outputs
+            float pitchOutput = pidPitch.getOutput();
+            float rollOutput = pidRoll.getOutput();
+            
+            // Get servo positions
+            float servoPitch = servo.getPitchAngle();
+            float servoRoll = servo.getRollAngle();
+            
+            // Print status
+            Serial.println("========================================");
+            Serial.printf("[Current] Pitch: %6.2f°  Roll: %6.2f°\n", pitchDeg, rollDeg);
+            Serial.printf("[Target]  Pitch: %6.2f°  Roll: %6.2f°\n", targetPitch, targetRoll);
+            Serial.printf("[PID Out] Pitch: %6.2f°  Roll: %6.2f°\n", pitchOutput, rollOutput);
+            Serial.printf("[Servo]   Pitch: %6.2f°  Roll: %6.2f°\n", servoPitch, servoRoll);
+            
+            // Get PID terms for debugging
+            float pTerm, iTerm, dTerm;
+            pidPitch.getTerms(pTerm, iTerm, dTerm);
+            Serial.printf("[PID-P]   P=%.2f  I=%.2f  D=%.2f\n", pTerm, iTerm, dTerm);
+            
+            Serial.printf("[Heap]    Free: %d bytes\n", ESP.getFreeHeap());
         }
     }
     
