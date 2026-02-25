@@ -26,12 +26,14 @@ ESP32-CAM을 활용하여 **실시간 영상 스트리밍**과 **2축 짐벌(Pan
 ### 1️⃣ 임베디드 시스템 (ESP32 Firmware)
 
 **하드웨어 구성**:
+
 - **ESP32-CAM**: 메인 MCU + 카메라 모듈
 - **MPU6050**: 6축 자이로/가속도 센서 (I2C)
 - **서보 모터 x2**: Pan/Tilt 제어 (PWM)
 - **INA219** (옵션): 전력 모니터링 센서
 
 **핵심 기능**:
+
 - ✅ FreeRTOS 멀티태스킹 (코어별 태스크 분산)
 - ✅ 실시간 카메라 스트리밍 (MJPEG)
 - ✅ MPU6050 센서 데이터 읽기 + 상보 필터
@@ -42,6 +44,7 @@ ESP32-CAM을 활용하여 **실시간 영상 스트리밍**과 **2축 짐벌(Pan
 ### 2️⃣ 웹 대시보드 (React Frontend)
 
 **기술 스택**:
+
 - React 18 + TypeScript
 - Three.js (3D 디지털 트윈)
 - Chart.js (실시간 차트)
@@ -49,6 +52,7 @@ ESP32-CAM을 활용하여 **실시간 영상 스트리밍**과 **2축 짐벌(Pan
 - TailwindCSS (UI 스타일링)
 
 **핵심 기능**:
+
 - ✅ 실시간 영상 스트리밍 뷰어
 - ✅ Three.js 3D 짐벌 모델 (실시간 각도 동기화)
 - ✅ 시스템 리소스 모니터링 패널
@@ -59,10 +63,12 @@ ESP32-CAM을 활용하여 **실시간 영상 스트리밍**과 **2축 짐벌(Pan
 ### 3️⃣ 통신 프로토콜
 
 **이원화 설계**:
+
 - **MJPEG Stream**: HTTP 기반 영상 스트리밍 (저지연)
 - **WebSocket Binary**: 제어 명령 + 텔레메트리 (C struct 직렬화)
 
 **데이터 흐름**:
+
 ```
 [ESP32] ←WebSocket→ [Server/Browser]
    ↓ MJPEG
@@ -73,36 +79,41 @@ ESP32-CAM을 활용하여 **실시간 영상 스트리밍**과 **2축 짐벌(Pan
 
 ## 📊 주요 성능 지표
 
-| 항목 | 목표 스펙 | 측정 방법 |
-|------|-----------|-----------|
-| **영상 지연** | < 200ms | 타임스탬프 비교 |
-| **제어 응답** | < 50ms | WebSocket RTT |
-| **각도 정확도** | ±1° | 목표 vs 실제 각도 차이 |
-| **FPS** | 20~30 fps | 카메라 출력 |
-| **CPU 사용률** | < 80% | FreeRTOS 통계 |
-| **Heap 여유** | > 30KB | Free Heap Size |
+| 항목            | 목표 스펙 | 측정 방법              |
+| --------------- | --------- | ---------------------- |
+| **영상 지연**   | < 200ms   | 타임스탬프 비교        |
+| **제어 응답**   | < 50ms    | WebSocket RTT          |
+| **각도 정확도** | ±1°       | 목표 vs 실제 각도 차이 |
+| **FPS**         | 20~30 fps | 카메라 출력            |
+| **CPU 사용률**  | < 80%     | FreeRTOS 통계          |
+| **Heap 여유**   | > 30KB    | Free Heap Size         |
 
 ---
 
 ## 🎓 기술적 도전 과제
 
 ### 1. **멀티태스킹 설계**
+
 - **문제**: 카메라 스트리밍, 센서 읽기, 모터 제어를 동시에 처리
 - **해결**: FreeRTOS 태스크를 Core 0/1에 분산 배치, 우선순위 설정
 
 ### 2. **센서 데이터 융합**
+
 - **문제**: MPU6050의 노이즈와 드리프트
 - **해결**: 상보 필터(Complementary Filter)로 자이로/가속도 융합
 
 ### 3. **저지연 통신**
+
 - **문제**: JSON 직렬화 오버헤드
 - **해결**: C struct 바이너리 직렬화로 패킷 크기 최소화
 
 ### 4. **PID 튜닝**
+
 - **문제**: 하드웨어별 최적 PID 계수 상이
 - **해결**: 런타임 튜닝 UI로 실시간 파라미터 조정
 
 ### 5. **3D 동기화**
+
 - **문제**: Three.js 렌더링 타이밍과 센서 데이터 동기화
 - **해결**: requestAnimationFrame + 타임스탬프 기반 보간
 
@@ -111,12 +122,14 @@ ESP32-CAM을 활용하여 **실시간 영상 스트리밍**과 **2축 짐벌(Pan
 ## 🚀 확장 가능성
 
 ### Phase 2 (미래 기능)
+
 - [ ] **자동 추적**: 얼굴/물체 인식 후 자동 짐벌 추적
 - [ ] **녹화 기능**: 서버 측 영상 녹화 및 저장
 - [ ] **다중 카메라**: 여러 ESP32-CAM 동시 제어
 - [ ] **AI 분석**: 실시간 객체 인식 결과 오버레이
 
 ### Phase 3 (고급 기능)
+
 - [ ] **SLAM**: 3D 매핑 및 자율 탐색
 - [ ] **클라우드 연동**: AWS IoT Core 통합
 - [ ] **모바일 앱**: React Native 짐벌 컨트롤러
@@ -164,22 +177,25 @@ esp32-camera-streaming/
 ✅ **Milestone 2**: 바이너리 WebSocket 통신 구현  
 ✅ **Milestone 3**: Three.js 3D 짐벌 모델 실시간 동기화  
 ✅ **Milestone 4**: 시스템 텔레메트리 대시보드 완성  
-✅ **Milestone 5**: PID 튜닝 및 성능 최적화  
+✅ **Milestone 5**: PID 튜닝 및 성능 최적화
 
 ---
 
 ## 📚 참고 자료
 
 ### ESP32 개발
+
 - [ESP32 FreeRTOS Documentation](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/freertos.html)
 - [MPU6050 Arduino Library](https://github.com/jrowberg/i2cdevlib/tree/master/Arduino/MPU6050)
 - [ESP32-CAM Example](https://github.com/espressif/arduino-esp32/tree/master/libraries/ESP32/examples/Camera)
 
 ### 제어 이론
+
 - [PID Control Wikipedia](https://en.wikipedia.org/wiki/PID_controller)
 - [Complementary Filter Paper](https://www.nxp.com/docs/en/application-note/AN3461.pdf)
 
 ### 웹 개발
+
 - [Three.js Documentation](https://threejs.org/docs/)
 - [Chart.js Real-time Examples](https://www.chartjs.org/docs/latest/samples/advanced/linear-gradient.html)
 - [WebSocket Binary Protocol](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#exchanging_data_frames)

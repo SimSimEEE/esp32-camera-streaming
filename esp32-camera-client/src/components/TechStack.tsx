@@ -35,7 +35,8 @@ interface GradeMeta {
 const gradeMeta: Record<Skill["grade"], GradeMeta> = {
     A: {
         title: "<span class='bg-gradient-to-r from-emerald-400 to-green-300 bg-clip-text text-transparent'>아키텍트/리드</span>",
-        definition: "시스템 <span class='font-bold text-emerald-300'>아키텍처 설계</span>, <span class='font-bold text-emerald-300'>성능 최적화</span>, 고난도 장애 대응 리딩이 가능한 수준입니다.",
+        definition:
+            "시스템 <span class='font-bold text-emerald-300'>아키텍처 설계</span>, <span class='font-bold text-emerald-300'>성능 최적화</span>, 고난도 장애 대응 리딩이 가능한 수준입니다.",
         chipClassName: "bg-emerald-500/20 text-emerald-300 border border-emerald-400/40",
         accentClassName: "text-emerald-300",
         barClassName: "bg-emerald-400",
@@ -256,7 +257,7 @@ export const TechStack = () => {
                                     <span>등급 {grade} · </span>
                                     <span dangerouslySetInnerHTML={{ __html: meta.title }} />
                                 </div>
-                                <p 
+                                <p
                                     className="mt-2 text-sm text-gray-300 leading-relaxed"
                                     dangerouslySetInnerHTML={{ __html: meta.definition }}
                                 />

@@ -37,7 +37,9 @@ export const Hero = () => {
                     <span className="text-primary-400 font-semibold">심우근</span>
                 </p>
 
-                <p className="text-xl text-cyan-300 mb-6 font-bold bg-gradient-to-r from-cyan-900/30 to-transparent px-4 py-2 rounded-lg inline-block">엔지니어의 정밀함 × 개발자의 확장성</p>
+                <p className="text-xl text-cyan-300 mb-6 font-bold bg-gradient-to-r from-cyan-900/30 to-transparent px-4 py-2 rounded-lg inline-block">
+                    엔지니어의 정밀함 × 개발자의 확장성
+                </p>
 
                 {/* Tech / Domain Tags */}
                 <div className="flex flex-wrap gap-2 justify-center max-w-2xl mx-auto mb-12">

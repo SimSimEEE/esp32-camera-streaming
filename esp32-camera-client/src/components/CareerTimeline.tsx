@@ -117,7 +117,15 @@ const milestones: Milestone[] = [
             "Docker Compose 기반 프로덕션 서비스 운영",
         ],
         color: "from-primary-500 to-cyan-500",
-        techUsed: ["Java", "WebSocket", "ESP32-CAM", "Python AI", "Docker", "React", "DuckDNS + SSL"],
+        techUsed: [
+            "Java",
+            "WebSocket",
+            "ESP32-CAM",
+            "Python AI",
+            "Docker",
+            "React",
+            "DuckDNS + SSL",
+        ],
         impact: [
             "하드웨어·펌웨어·서버·AI·프론트엔드까지 전 영역 설계 및 구현 완료",
             "동시성 제어(Race Condition) 문제를 직접 재현하고 Semaphore로 해결한 실전형 경험",
@@ -225,7 +233,9 @@ export const CareerTimeline = () => {
                                                     ) : (
                                                         <>
                                                             <ChevronDown className="w-4 h-4 animate-bounce" />
-                                                            <span className="bg-gradient-to-r from-primary-400 to-cyan-400 bg-clip-text text-transparent">📋 사용 기술 · 성과 보기</span>
+                                                            <span className="bg-gradient-to-r from-primary-400 to-cyan-400 bg-clip-text text-transparent">
+                                                                📋 사용 기술 · 성과 보기
+                                                            </span>
                                                         </>
                                                     )}
                                                 </button>
@@ -298,11 +308,13 @@ export const CareerTimeline = () => {
                     <div className="relative mb-0">
                         {/* Vertical Line Extension */}
                         <div className="absolute left-8 md:left-8 top-0 h-24 w-0.5 bg-gradient-to-b from-primary-500 via-cyan-500 to-transparent"></div>
-                        
+
                         {/* Connection Text */}
                         <div className="relative ml-24 md:ml-24 mt-12 flex items-center gap-3 text-cyan-400">
                             <div className="h-px flex-1 bg-gradient-to-r from-cyan-500/50 to-transparent"></div>
-                            <span className="text-sm font-semibold tracking-wider">▼ Live Demo Below</span>
+                            <span className="text-sm font-semibold tracking-wider">
+                                ▼ Live Demo Below
+                            </span>
                             <div className="h-px flex-1 bg-gradient-to-l from-cyan-500/50 to-transparent"></div>
                         </div>
                     </div>
