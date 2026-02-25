@@ -2,7 +2,7 @@
 
 **Status**: ✅ Phase 2 Complete - Ready for Testing  
 **Author**: Sim U Geun <sim@lemoncloud.io>  
-**Date**: 2025-02-03  
+**Date**: 2025-02-03
 
 ---
 
@@ -11,11 +11,12 @@
 **Phase 2** completes the gimbal control loop with PID controllers and servo motor integration. The system now actively stabilizes the gimbal to a target angle using dual-core FreeRTOS task coordination.
 
 ### Key Features
+
 - ✅ PID controller with anti-windup and derivative filtering
 - ✅ Dual-axis servo control (pitch, roll) via ESP32 LEDC (PWM)
 - ✅ FreeRTOS multi-core task architecture:
-  - Core 0: Sensor task (100Hz) - MPU6050 reading + complementary filter
-  - Core 1: Control task (50Hz) - PID computation + servo output
+    - Core 0: Sensor task (100Hz) - MPU6050 reading + complementary filter
+    - Core 1: Control task (50Hz) - PID computation + servo output
 - ✅ Thread-safe data sharing between tasks
 - ✅ Real-time debugging output with PID terms
 
@@ -24,6 +25,7 @@
 ## 🏗️ Architecture
 
 ### System Flow
+
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                  ESP32 Dual-Core System                 │
@@ -78,57 +80,68 @@ esp32-gimbal-firmware/
 ## 🎛️ PID Controller Features
 
 ### 1. **Proportional Term (P)**
+
 ```cpp
 pTerm = Kp * error
 ```
+
 - Responds to current error
 - Higher Kp = faster response, more overshoot
 
 ### 2. **Integral Term (I) with Anti-Windup**
+
 ```cpp
 integral += error * dt;
 integral = clamp(integral, -10.0, 10.0);  // Anti-windup
 iTerm = Ki * integral;
 ```
+
 - Eliminates steady-state error
 - Anti-windup prevents integral saturation
 
 ### 3. **Derivative Term (D) with Filtering**
+
 ```cpp
 derivative = (error - prevError) / dt;
 filteredD = 0.8 * prevD + 0.2 * derivative;  // Low-pass filter
 dTerm = Kd * filteredD;
 ```
+
 - Dampens oscillations
 - Filtering reduces noise sensitivity
 
 ### PID Tuning Guide
 
 **Default values** (from Config.h):
+
 ```cpp
 Kp = 1.0, Ki = 0.0, Kd = 0.0
 ```
 
 **Ziegler-Nichols Method:**
+
 1. Set Ki=0, Kd=0
 2. Increase Kp until oscillation starts (Ku)
 3. Measure oscillation period (Tu)
 4. Calculate:
-   - Kp = 0.6 * Ku
-   - Ki = 2 * Kp / Tu
-   - Kd = Kp * Tu / 8
+    - Kp = 0.6 \* Ku
+    - Ki = 2 \* Kp / Tu
+    - Kd = Kp \* Tu / 8
 
 ---
 
 ## 🔧 Servo Controller Features
 
 ### LEDC (LED Control) Peripheral
+
 ESP32's LEDC generates precise PWM signals:
+
 - **Channels**: 0 (pitch), 1 (roll)
 - **Resolution**: 16-bit (0 ~ 65535)
 - **Frequency**: 50Hz (standard servo)
 
 ### Angle to PWM Conversion
+
 ```cpp
 // -90° → 500us, 0° → 1500us, +90° → 2500us
 pulseUs = 500 + normalize(angle) * 2000;
@@ -137,6 +150,7 @@ ledcWrite(channel, duty);
 ```
 
 ### Servo Limits
+
 ```cpp
 angleMin = -90°
 angleMax = +90°
@@ -218,18 +232,21 @@ PID Control + Servo Integration
 ## 🧪 Testing
 
 ### Test 1: Sensor → PID → Servo Chain
+
 1. Upload firmware
 2. Tilt gimbal manually (pitch/roll)
 3. Observe servo compensating to maintain 0° target
 4. Expected: Gimbal returns to level within 2 seconds
 
 ### Test 2: PID Step Response
+
 1. Manually set `targetPitch = 30.0f` in code
 2. Re-upload
 3. Observe settling time and overshoot
 4. Expected: Reaches 30° ± 1° in < 2s
 
 ### Test 3: Free Heap Monitoring
+
 1. Run for 5+ minutes
 2. Monitor `[Heap] Free: X bytes` output
 3. Expected: No decrease (no memory leak)
@@ -238,15 +255,15 @@ PID Control + Servo Integration
 
 ## 📊 Performance Metrics (Phase 2)
 
-| Metric               | Target    | Achieved |
-| -------------------- | --------- | -------- |
-| **RAM Usage**        | < 10%     | 6.9%     |
-| **Flash Usage**      | < 20%     | 10.2%    |
-| **Sensor Rate**      | 100Hz     | 100Hz    |
-| **Control Rate**     | 50Hz      | 50Hz     |
-| **Settling Time**    | < 2s      | TBD      |
-| **Steady-State Err** | ± 1°      | TBD      |
-| **Overshoot**        | < 10%     | TBD      |
+| Metric               | Target | Achieved |
+| -------------------- | ------ | -------- |
+| **RAM Usage**        | < 10%  | 6.9%     |
+| **Flash Usage**      | < 20%  | 10.2%    |
+| **Sensor Rate**      | 100Hz  | 100Hz    |
+| **Control Rate**     | 50Hz   | 50Hz     |
+| **Settling Time**    | < 2s   | TBD      |
+| **Steady-State Err** | ± 1°   | TBD      |
+| **Overshoot**        | < 10%  | TBD      |
 
 **TBD** = To Be Determined (requires hardware testing)
 
@@ -255,40 +272,44 @@ PID Control + Servo Integration
 ## 🔜 Next Steps (Phase 3)
 
 1. **Binary WebSocket Protocol**
-   - Message types: Telemetry, ControlCommand, PIDUpdate
-   - CRC16 validation
-   - Struct serialization
+    - Message types: Telemetry, ControlCommand, PIDUpdate
+    - CRC16 validation
+    - Struct serialization
 
 2. **WebSocket Client**
-   - Connect to Java server
-   - Send telemetry (10Hz)
-   - Receive control commands
+    - Connect to Java server
+    - Send telemetry (10Hz)
+    - Receive control commands
 
 3. **Runtime PID Tuning**
-   - Receive PIDUpdate messages
-   - Update gains dynamically
-   - Save to EEPROM
+    - Receive PIDUpdate messages
+    - Update gains dynamically
+    - Save to EEPROM
 
 ---
 
 ## 🛠️ Troubleshooting
 
 ### Servo doesn't move
+
 - **Check power**: Servos need 5V, 500mA+
 - **Test PWM**: Verify LEDC signals with oscilloscope
 - **Range limits**: Default is ±90°, check if `angleMin`/`angleMax` are too restrictive
 
 ### PID oscillates continuously
+
 - **Too high Kp**: Reduce by 50% and re-test
-- **Missing D term**: Add Kd = Kp * 0.1
+- **Missing D term**: Add Kd = Kp \* 0.1
 - **Sensor noise**: Increase complementary filter alpha (0.96 → 0.98)
 
 ### Control task crashes
+
 - **Stack overflow**: Increase `TASK_STACK_CONTROL` (3072 → 4096)
 - **Check free heap**: Should be > 200KB
 - **Mutex deadlock**: Ensure all `xSemaphoreTake` have `xSemaphoreGive`
 
 ### Gimbal drifts slowly
+
 - **Integral windup**: Check if I term saturates at ±10
 - **Sensor calibration**: Re-run calibration when stationary
 - **External disturbance**: Add friction dampening to mechanical gimbal

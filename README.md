@@ -69,12 +69,12 @@ esp32-camera-streaming/
 
 ### 📚 설계 문서
 
-| 문서 | 설명 |
-|------|------|
+| 문서                                                          | 설명                                       |
+| ------------------------------------------------------------- | ------------------------------------------ |
 | [GIMBAL_PROJECT_OVERVIEW.md](docs/GIMBAL_PROJECT_OVERVIEW.md) | 프로젝트 목표, 시스템 구성 요소, 성공 기준 |
-| [GIMBAL_ARCHITECTURE.md](docs/GIMBAL_ARCHITECTURE.md) | FreeRTOS 태스크 설계, 3D 뷰어 아키텍처 |
-| [GIMBAL_PROTOCOL.md](docs/GIMBAL_PROTOCOL.md) | 바이너리 WebSocket 프로토콜 사양 |
-| [GIMBAL_ROADMAP.md](docs/GIMBAL_ROADMAP.md) | 6단계 구현 계획 (6-8주 예상) |
+| [GIMBAL_ARCHITECTURE.md](docs/GIMBAL_ARCHITECTURE.md)         | FreeRTOS 태스크 설계, 3D 뷰어 아키텍처     |
+| [GIMBAL_PROTOCOL.md](docs/GIMBAL_PROTOCOL.md)                 | 바이너리 WebSocket 프로토콜 사양           |
+| [GIMBAL_ROADMAP.md](docs/GIMBAL_ROADMAP.md)                   | 6단계 구현 계획 (6-8주 예상)               |
 
 **현재 상태**: ✅ 설계 완료, ⏳ 구현 대기 중
 
@@ -102,7 +102,6 @@ esp32-camera-streaming/
 - **AI를 이용한 변화 이유 분석** (사람, 물체, 조명, 카메라 흔들림)
 - **자동 스냅샷 저장**
 - **웹 UI에 실시간 알림 표시**
-
 
 ## ⚙️ 환경 변수 설정
 
@@ -303,18 +302,21 @@ npm test                  # 테스트
 ## 📚 상세 문서
 
 ### 프로젝트별 문서
+
 - **서버**: [esp32-camera-server/README.md](esp32-camera-server/README.md)
 - **클라이언트**: [esp32-camera-client/README.md](esp32-camera-client/README.md)
 - **펌웨어**: [esp32-camera-firmware/README.md](esp32-camera-firmware/README.md)
 - **모션 감지**: [esp32-motion-detector/README.md](esp32-motion-detector/README.md)
 
 ### 배포 가이드
+
 - **빠른 시작**: [DEPLOY_GUIDE.md](DEPLOY_GUIDE.md)
 - **클라우드 아키텍처**: [DEPLOYMENT.md](DEPLOYMENT.md)
 - **EC2 배포**: [EC2_DEPLOYMENT.md](EC2_DEPLOYMENT.md)
 - **DuckDNS + SSL**: [DEPLOY_WITH_DUCKDNS.md](DEPLOY_WITH_DUCKDNS.md)
 
 ### 기능별 가이드
+
 - **모션 감지 설정**: [MOTION_DETECTION_GUIDE.md](MOTION_DETECTION_GUIDE.md)
 - **버전 관리**: [VERSION.md](VERSION.md)
 

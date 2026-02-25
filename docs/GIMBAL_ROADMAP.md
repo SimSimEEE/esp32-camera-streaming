@@ -55,18 +55,18 @@ ESP32에서 MPU6050 센서 데이터를 읽고 상보 필터로 정확한 짐벌
 
 ### Task List
 
-- [ ] **1.1 개발 환경 설정** (1일)
+- [x] **1.1 개발 환경 설정** (1일)
     - PlatformIO 프로젝트 생성 (`esp32-gimbal-firmware`)
     - MPU6050 라이브러리 설치 (I2Cdevlib 또는 Adafruit)
     - 하드웨어 연결 확인 (I2C 스캔 테스트)
 
-- [ ] **1.2 MPU6050 기본 동작** (2일)
+- [x] **1.2 MPU6050 기본 동작** (2일)
     - I2C 통신 설정 (SCL: GPIO 22, SDA: GPIO 21)
     - Raw 데이터 읽기 (자이로, 가속도)
     - 센서 캘리브레이션 (평면에서 정지 상태 오프셋 계산)
     - Serial 출력으로 데이터 확인
 
-- [ ] **1.3 상보 필터 구현** (3일)
+- [x] **1.3 상보 필터 구현** (3일)
     - 자이로스코프 적분 (각속도 → 각도)
     - 가속도계 각도 계산 (atan2)
     - 상보 필터 융합 (alpha = 0.96)
@@ -95,20 +95,20 @@ ESP32에서 MPU6050 센서 데이터를 읽고 상보 필터로 정확한 짐벌
 
 ### Task List
 
-- [ ] **2.1 FreeRTOS 태스크 구조 설계** (3일)
+- [x] **2.1 FreeRTOS 태스크 구조 설계** (3일)
     - Core 0: Sensor Task (100Hz)
     - Core 1: Control Task (50Hz)
     - Queue를 통한 데이터 전달
     - Mutex로 I2C 버스 보호
 
-- [ ] **2.2 PID 제어기 구현** (4일)
+- [x] **2.2 PID 제어기 구현** (4일)
     - PID 클래스 작성 (`PIDController.cpp`)
     - Ziegler-Nichols 방법으로 초기 튜닝
     - Anti-windup 구현 (I항 적분 포화 방지)
     - 출력 제한 (-90° ~ +90°)
     - Step response 테스트
 
-- [ ] **2.3 서보 모터 PWM 제어** (2일)
+- [x] **2.3 서보 모터 PWM 제어** (2일)
     - LEDC 라이브러리 사용 (ESP32 PWM)
     - 각도 → PWM 변환 (500us ~ 2500us)
     - 2개 서보 독립 제어 (Pitch, Roll)
@@ -136,26 +136,26 @@ ESP32에서 MPU6050 센서 데이터를 읽고 상보 필터로 정확한 짐벌
 
 ### Task List
 
-- [ ] **3.1 바이너리 메시지 직렬화** (2일)
+- [x] **3.1 바이너리 메시지 직렬화** (2일)
     - 프로토콜 헤더 구조체 정의
     - CRC16 계산 함수 구현
     - 텔레메트리 메시지 생성 함수
     - 제어 명령 파싱 함수
 
-- [ ] **3.2 WebSocket 클라이언트** (3일)
+- [x] **3.2 WebSocket 클라이언트** (3일)
     - WebSocket 라이브러리 (arduinoWebSockets)
     - 바이너리 모드 전송 설정
     - 재연결 로직 (Exponential Backoff)
     - Heartbeat 구현 (10초 주기)
 
-- [ ] **3.3 텔레메트리 수집** (2일)
+- [x] **3.3 텔레메트리 수집** (2일)
     - Free heap, stack high water mark
     - CPU load 계산 (FreeRTOS stats)
     - Wi-Fi RSSI
     - PID 출력값, 서보 PWM
     - 100ms 주기로 전송
 
-- [ ] **3.4 제어 명령 처리** (2일)
+- [x] **3.4 제어 명령 처리** (2일)
     - ControlCommand 메시지 수신
     - 목표 각도 업데이트
     - PIDUpdate 메시지 처리
@@ -453,11 +453,17 @@ React 대시보드에서 바이너리 데이터를 파싱하고 3D로 짐벌을 
 - [ ] 서보 모터 제어 동작 확인
 - [ ] Settling time < 2초 달성
 
+### Phase 2
+
+- [x] PID 제어기 구현 완료
+- [x] 서보 제어 모듈 동작 확인
+- [x] 50Hz 제어 루프 안정화
+
 ### Phase 3
 
-- [ ] 바이너리 프로토콜 정의 완료
-- [ ] WebSocket 통신 안정화
-- [ ] 텔레메트리 10Hz 전송 확인
+- [x] 바이너리 프로토콜 정의 완료
+- [x] WebSocket 통신 안정화
+- [x] 텔레메트리 10Hz 전송 확인
 
 ### Phase 4
 
