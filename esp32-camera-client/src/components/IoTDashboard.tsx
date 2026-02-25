@@ -31,10 +31,10 @@ const esp32Project = {
     color: "from-primary-500 to-blue-500",
     tags: ["Java", "WebSocket", "ESP32", "Python", "Docker", "React", "AI"],
     highlights: [
-        "WebSocket 기반 실시간 양방향 통신 및 다중 시청자 브로드캐스트",
-        "Java Semaphore/AtomicReference로 다수 클라이언트 동시 제어권 충돌 방지",
-        "Python AI Analyzer가 프레임 분석 후 BoundingBox를 역방향으로 Canvas에 오버레이",
-        "Git pre-commit Hook 기반 자동 버전 bump 및 DuckDNS + SSL 프로덕션 배포",
+        "<span class='text-primary-400 font-semibold'>WebSocket</span> 기반 <span class='text-cyan-400 font-semibold'>실시간</span> 양방향 통신 및 다중 시청자 브로드캐스트",
+        "Java <span class='text-amber-400 font-semibold'>Semaphore/AtomicReference</span>로 다수 클라이언트 동시 제어권 충돌 방지",
+        "Python <span class='text-green-400 font-semibold'>AI Analyzer</span>가 프레임 분석 후 <span class='text-purple-400 font-semibold'>BoundingBox</span>를 역방향으로 Canvas에 오버레이",
+        "Git <span class='text-blue-400 font-semibold'>pre-commit Hook</span> 기반 자동 버전 bump 및 <span class='text-pink-400 font-semibold'>DuckDNS + SSL</span> 프로덕션 배포",
     ],
     link: "https://github.com/SimSimEEE/esp32-camera-streaming",
     architecture: [
@@ -149,9 +149,9 @@ export const IoTDashboard = () => {
                     {/* Architecture */}
                     {project.architecture && project.architecture.length > 0 && (
                         <div>
-                            <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
-                                <Layers className="w-3.5 h-3.5 text-cyan-400" />
-                                Architecture
+                            <h4 className="flex items-center gap-1.5 text-sm font-bold mb-2 uppercase tracking-wider">
+                                <Layers className="w-4 h-4 text-cyan-400" />
+                                <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Architecture</span>
                             </h4>
                             <ul className="space-y-2">
                                 {project.architecture.map((item, i) => (
@@ -170,9 +170,9 @@ export const IoTDashboard = () => {
                     {/* Challenges */}
                     {project.challenges && project.challenges.length > 0 && (
                         <div>
-                            <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
-                                <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-                                Technical Challenges
+                            <h4 className="flex items-center gap-1.5 text-sm font-bold mb-2 uppercase tracking-wider">
+                                <AlertTriangle className="w-4 h-4 text-amber-400" />
+                                <span className="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">Technical Challenges</span>
                             </h4>
                             <ul className="space-y-2">
                                 {project.challenges.map((item, i) => (

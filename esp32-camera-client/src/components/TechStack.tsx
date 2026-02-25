@@ -34,26 +34,26 @@ interface GradeMeta {
 
 const gradeMeta: Record<Skill["grade"], GradeMeta> = {
     A: {
-        title: "아키텍트/리드",
-        definition: "시스템 아키텍처 설계, 성능 최적화, 고난도 장애 대응 리딩이 가능한 수준입니다.",
+        title: "<span class='bg-gradient-to-r from-emerald-400 to-green-300 bg-clip-text text-transparent'>아키텍트/리드</span>",
+        definition: "시스템 <span class='font-bold text-emerald-300'>아키텍처 설계</span>, <span class='font-bold text-emerald-300'>성능 최적화</span>, 고난도 장애 대응 리딩이 가능한 수준입니다.",
         chipClassName: "bg-emerald-500/20 text-emerald-300 border border-emerald-400/40",
         accentClassName: "text-emerald-300",
         barClassName: "bg-emerald-400",
         score: 95,
     },
     B: {
-        title: "스페셜리스트/시니어",
+        title: "<span class='bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent'>스페셜리스트/시니어</span>",
         definition:
-            "복잡한 비즈니스 로직을 독립적으로 구현하고, 베스트 프랙티스를 실무에 적용할 수 있는 수준입니다.",
+            "<span class='font-bold text-blue-300'>복잡한 비즈니스 로직</span>을 독립적으로 구현하고, <span class='font-bold text-blue-300'>베스트 프랙티스</span>를 실무에 적용할 수 있는 수준입니다.",
         chipClassName: "bg-blue-500/20 text-blue-300 border border-blue-400/40",
         accentClassName: "text-blue-300",
         barClassName: "bg-blue-400",
         score: 75,
     },
     C: {
-        title: "실무형/운영 가능",
+        title: "<span class='bg-gradient-to-r from-slate-400 to-gray-300 bg-clip-text text-transparent'>실무형/운영 가능</span>",
         definition:
-            "산업 현장에서 요구되는 실무 준비 수준으로, 문서와 표준 프로세스를 기반으로 운영 환경 기능 구현 및 유지보수가 가능합니다.",
+            "산업 현장에서 요구되는 <span class='font-bold text-slate-300'>실무 준비 수준</span>으로, 문서와 표준 프로세스를 기반으로 운영 환경 기능 구현 및 유지보수가 가능합니다.",
         chipClassName: "bg-slate-500/20 text-slate-300 border border-slate-400/40",
         accentClassName: "text-slate-300",
         barClassName: "bg-slate-400",
@@ -253,11 +253,13 @@ export const TechStack = () => {
                                 <div
                                     className={`inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-base font-bold shadow-lg ${meta.chipClassName} border`}
                                 >
-                                    등급 {grade} · {meta.title}
+                                    <span>등급 {grade} · </span>
+                                    <span dangerouslySetInnerHTML={{ __html: meta.title }} />
                                 </div>
-                                <p className="mt-2 text-sm text-gray-300 leading-relaxed">
-                                    {meta.definition}
-                                </p>
+                                <p 
+                                    className="mt-2 text-sm text-gray-300 leading-relaxed"
+                                    dangerouslySetInnerHTML={{ __html: meta.definition }}
+                                />
                             </div>
                         ),
                     )}

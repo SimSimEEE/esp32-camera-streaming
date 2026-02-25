@@ -215,17 +215,17 @@ export const CareerTimeline = () => {
                                             <>
                                                 <button
                                                     onClick={() => toggleExpand(milestone.id)}
-                                                    className="mt-4 flex items-center justify-center gap-1 w-full py-2 text-xs text-gray-500 hover:text-primary-400 border-t border-gray-800 hover:border-primary-800 transition-colors"
+                                                    className="mt-4 flex items-center justify-center gap-2 w-full py-3 text-sm font-semibold text-primary-400 hover:text-primary-300 bg-gray-900/50 hover:bg-primary-900/20 border-t-2 border-primary-500/30 hover:border-primary-400/60 rounded-b-lg transition-all duration-300 shadow-lg shadow-primary-900/10"
                                                 >
                                                     {isExpanded ? (
                                                         <>
-                                                            <ChevronUp className="w-3.5 h-3.5" />
-                                                            접기
+                                                            <ChevronUp className="w-4 h-4" />
+                                                            <span>접기</span>
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <ChevronDown className="w-3.5 h-3.5" />
-                                                            사용 기술 · 성과 보기
+                                                            <ChevronDown className="w-4 h-4 animate-bounce" />
+                                                            <span className="bg-gradient-to-r from-primary-400 to-cyan-400 bg-clip-text text-transparent">📋 사용 기술 · 성과 보기</span>
                                                         </>
                                                     )}
                                                 </button>
