@@ -11,6 +11,7 @@
 import { Hero } from "./components/Hero";
 import { CareerTimeline } from "./components/CareerTimeline";
 import { IoTDashboard } from "./components/IoTDashboard";
+import { GimbalDashboard } from "./components/GimbalDashboard";
 import { ProjectCards } from "./components/ProjectCards";
 import { TechStack } from "./components/TechStack";
 import { Contact } from "./components/Contact";
@@ -22,6 +23,7 @@ const App = () => {
             <Hero />
             <CareerTimeline />
             <IoTDashboard />
+            <GimbalDashboard />
             <TechStack />
             <ProjectCards />
             <Contact />

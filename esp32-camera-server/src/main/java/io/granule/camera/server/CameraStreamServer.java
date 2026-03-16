@@ -16,6 +16,7 @@ import io.granule.camera.server.module.ConnectionManager;
 import io.granule.camera.server.module.LedStateManager;
 import io.granule.camera.server.module.FrameRelayService;
 import io.granule.camera.server.module.ViewerStatsService;
+import io.granule.camera.server.module.GimbalWebSocketHandler;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -43,6 +44,7 @@ public class CameraStreamServer extends WebSocketServer {
     private final LedStateManager ledStateManager = new LedStateManager();
     private final FrameRelayService frameRelayService = new FrameRelayService();
     private final ViewerStatsService viewerStatsService = new ViewerStatsService();
+    private final GimbalWebSocketHandler gimbalHandler = new GimbalWebSocketHandler();
     
     // Version tracking (Thread-Safe)
     private final AtomicReference<String> firmwareVersion = new AtomicReference<>("Unknown");
@@ -91,6 +93,25 @@ public class CameraStreamServer extends WebSocketServer {
             
             // Broadcast viewer count to all web clients
             broadcastViewerCount();
+        } else if (uri.startsWith("/gimbal")) {
+            // Determine if client is ESP32 gimbal or dashboard
+            if (uri.contains("esp32") || uri.contains("device")) {
+                gimbalHandler.addEsp32Client(conn);
+                _log.info("========================================");
+                _log.info("🎮 ESP32 GIMBAL CONNECTED");
+                _log.info("Remote: {}", conn.getRemoteSocketAddress());
+                _log.info("========================================");
+            } else {
+                gimbalHandler.addDashboardClient(conn);
+                _log.info("📊 Gimbal dashboard connected: {}", conn.getRemoteSocketAddress());
+                
+                // Send latest telemetry if available
+                final byte[] latestTelemetry = gimbalHandler.getLatestTelemetry();
+                if (latestTelemetry != null) {
+                    conn.send(latestTelemetry);
+                    _log.debug("Sent latest telemetry to new dashboard");
+                }
+            }
         } else {
             _log.warn("Unknown client type: {}", uri);
             conn.close();
@@ -105,6 +126,9 @@ public class CameraStreamServer extends WebSocketServer {
         _log.info("Connection closed: {} - {}", remoteAddress, reason);
         
         final boolean wasWebClient = connectionManager.removeClient(conn);
+        
+        // Remove from gimbal handler
+        gimbalHandler.removeClient(conn);
         
         // Notify remaining viewers of updated count
         if (wasWebClient) {
@@ -182,6 +206,13 @@ public class CameraStreamServer extends WebSocketServer {
     
     @Override
     public void onMessage(final WebSocket conn, final ByteBuffer message) {
+        // Handle gimbal binary protocol messages
+        if (gimbalHandler.isGimbalClient(conn)) {
+            _log.debug("Received gimbal binary message: {} bytes", message.remaining());
+            gimbalHandler.handleBinaryMessage(conn, message);
+            return;
+        }
+        
         // Receive binary data (camera frames) from ESP32
         if (connectionManager.isEsp32Client(conn)) {
             final int frameSize = message.remaining();
@@ -304,6 +335,8 @@ public class CameraStreamServer extends WebSocketServer {
         _log.info("Server started on port: {}", port);
         _log.info("ESP32 endpoint: ws://localhost:{}{}", port, ServerConfig.ENDPOINT_ESP32);
         _log.info("Viewer endpoint: ws://localhost:{}{}", port, ServerConfig.ENDPOINT_VIEWER);
+        _log.info("Gimbal endpoint: ws://localhost:{}/gimbal/esp32 (device)", port);
+        _log.info("Gimbal dashboard: ws://localhost:{}/gimbal/dashboard", port);
         _log.info("========================================");
         
         // Add shutdown hook to log final statistics
@@ -313,6 +346,9 @@ public class CameraStreamServer extends WebSocketServer {
             // Log final statistics via ViewerStatsService
             final Map<String, Object> stats = server.getStatistics();
             server.viewerStatsService.logStatistics(stats);
+            
+            // Log gimbal statistics
+            _log.info("Gimbal stats: {}", server.gimbalHandler.getStatistics());
             
             try {
                 server.stop(1000);

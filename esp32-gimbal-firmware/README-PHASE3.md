@@ -67,28 +67,28 @@ All messages follow this format:
 
 ### Message Types
 
-| Type | Name         | Direction    | Size | Frequency |
-|------|--------------|--------------|------|-----------|
-| 0x01 | Telemetry    | ESP32→Server | 48B  | 10Hz      |
-| 0x02 | Control      | Server→ESP32 | 16B  | On-demand |
-| 0x03 | PID Update   | Server→ESP32 | 32B  | On-demand |
-| 0x04 | Heartbeat    | Bidirectional| 16B  | 10s       |
+| Type | Name       | Direction     | Size | Frequency |
+| ---- | ---------- | ------------- | ---- | --------- |
+| 0x01 | Telemetry  | ESP32→Server  | 48B  | 10Hz      |
+| 0x02 | Control    | Server→ESP32  | 16B  | On-demand |
+| 0x03 | PID Update | Server→ESP32  | 32B  | On-demand |
+| 0x04 | Heartbeat  | Bidirectional | 16B  | 10s       |
 
 ### 0x01: Telemetry Message (48 bytes)
 
 ```c
 struct TelemetryPayload {
     uint32_t timestamp;      // ms since boot
-    
+
     // Attitude (12 bytes)
     float    pitch;          // degrees
     float    roll;           // degrees
     float    yaw;            // degrees
-    
+
     // Servo positions (8 bytes)
     float    servoPitch;     // degrees
     float    servoRoll;      // degrees
-    
+
     // System metrics (16 bytes)
     uint32_t freeHeap;       // bytes
     uint8_t  cpuLoad;        // 0-100%
@@ -100,7 +100,8 @@ struct TelemetryPayload {
 };
 ```
 
-**Example**: 
+**Example**:
+
 ```
 AA 55 01 01 00 28  // Header: magic=0xAA55, ver=1, type=1, size=40
 12 34 56 78        // timestamp = 0x78563412 (little-endian)
@@ -128,11 +129,11 @@ struct ControlPayload {
 struct PIDUpdatePayload {
     uint8_t  axis;           // 0=pitch, 1=roll
     uint8_t  reserved[3];    // Padding
-    
+
     float    kp;             // Proportional gain
     float    ki;             // Integral gain
     float    kd;             // Derivative gain
-    
+
     float    integralMin;    // Anti-windup min
     float    integralMax;    // Anti-windup max
 };
@@ -182,7 +183,7 @@ CRC is calculated over **header + payload** only (excludes CRC field itself).
 ```c
 void telemetryTask(void* parameter) {
     // Core: 1, Priority: 1 (low), Interval: 100ms (10Hz)
-    
+
     while (true) {
         if (wsClient.isConnected()) {
             // Collect system metrics
@@ -191,7 +192,7 @@ void telemetryTask(void* parameter) {
                 servoPitch, servoRoll,
                 controlLoopCount
             );
-            
+
             // Send via WebSocket
             wsClient.sendTelemetry(payload);
         }
@@ -271,7 +272,7 @@ Estimated from idle task time deltas (simplified approach).
 ### Dependencies
 
 ```ini
-lib_deps = 
+lib_deps =
     adafruit/Adafruit MPU6050@^2.2.4
     adafruit/Adafruit Unified Sensor@^1.1.15
     links2004/WebSockets@^2.4.1      # Binary WebSocket support
@@ -280,10 +281,10 @@ lib_deps =
 
 ### Memory Usage
 
-| Metric  | Phase 2 | Phase 3 | Change  |
-|---------|---------|---------|---------|
-| **RAM**   | 6.9%    | 14.1%   | +7.2%   |
-| **Flash** | 10.2%   | 30.3%   | +20.1%  |
+| Metric    | Phase 2 | Phase 3 | Change |
+| --------- | ------- | ------- | ------ |
+| **RAM**   | 6.9%    | 14.1%   | +7.2%  |
+| **Flash** | 10.2%   | 30.3%   | +20.1% |
 
 **Note**: Flash increase is mainly due to WebSocket library (~600KB).
 
@@ -333,6 +334,7 @@ PID Control + WebSocket Communication
 ### 1. WiFi Configuration
 
 Edit `Config.h`:
+
 ```c
 #define WIFI_SSID           "YourWiFiName"
 #define WIFI_PASSWORD       "YourPassword"
@@ -341,6 +343,7 @@ Edit `Config.h`:
 ### 2. Server Address
 
 Update WebSocket server IP:
+
 ```c
 #define WS_HOST             "192.168.1.100"  // Your server IP
 ```
@@ -356,6 +359,7 @@ pio device monitor
 ### 4. Verify Connection
 
 Check serial output for:
+
 - WiFi connection: `[WiFi] Connected successfully!`
 - WebSocket connection: `[WS] Connected to server`
 - Telemetry sending: `[WS] Sent telemetry: pitch=...`
@@ -363,6 +367,7 @@ Check serial output for:
 ### 5. Send Control Command
 
 From server (Python example):
+
 ```python
 import struct
 import websocket
@@ -413,14 +418,16 @@ ws.send_binary(message)
 ✅ **Phase 3 Complete**: Binary WebSocket protocol and telemetry
 
 ➡️ **Phase 4**: Java server binary handler and React dashboard
-   - Extend Java WebSocket server to parse binary messages
-   - Implement React hooks for binary protocol
-   - Create Three.js 3D gimbal viewer
-   - Real-time telemetry graphs
+
+- Extend Java WebSocket server to parse binary messages
+- Implement React hooks for binary protocol
+- Create Three.js 3D gimbal viewer
+- Real-time telemetry graphs
 
 ## Files Added/Modified
 
 ### New Files
+
 - `include/Protocol.h` - Binary message structures
 - `src/protocol/BinaryProtocol.h` - Serialization/deserialization
 - `src/protocol/BinaryProtocol.cpp` - CRC16 implementation
@@ -430,19 +437,20 @@ ws.send_binary(message)
 - `src/telemetry/TelemetryCollector.cpp` - System metrics
 
 ### Modified Files
+
 - `src/main.cpp` - WiFi setup, WebSocket integration, telemetry task
 - `include/Config.h` - WiFi and WebSocket configuration
 
 ## Performance Metrics
 
-| Metric                  | Value       |
-|-------------------------|-------------|
-| **Telemetry Frequency** | 10Hz        |
-| **Message Size**        | 48 bytes    |
-| **Bandwidth**           | 480 B/s     |
-| **Task Priority**       | 1 (lowest)  |
-| **Stack Usage**         | ~1.5KB      |
-| **Reconnect Time**      | ~2 seconds  |
+| Metric                  | Value      |
+| ----------------------- | ---------- |
+| **Telemetry Frequency** | 10Hz       |
+| **Message Size**        | 48 bytes   |
+| **Bandwidth**           | 480 B/s    |
+| **Task Priority**       | 1 (lowest) |
+| **Stack Usage**         | ~1.5KB     |
+| **Reconnect Time**      | ~2 seconds |
 
 ---
 
