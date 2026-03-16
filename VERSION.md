@@ -15,10 +15,19 @@ PATCH: Bug fixes, backward-compatible
 ## Current Versions
 
 - **Client**: 1.1.0
-- **Server**: 1.6.0
+- **Server**: 1.16.2
 - **Firmware**: 1.1.0
 
 ## Version History
+
+### v1.16.2 (2026-03-16)
+
+**Type**: PATCH (Server)
+
+**Changes**:
+
+- measure latency after actual canvas render, not before decode
+
 
 ### v1.16.1 (2026-03-16)
 
