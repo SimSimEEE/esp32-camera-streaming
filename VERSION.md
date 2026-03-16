@@ -20,6 +20,15 @@ PATCH: Bug fixes, backward-compatible
 
 ## Version History
 
+### v1.16.1 (2026-03-16)
+
+**Type**: PATCH (Server)
+
+**Changes**:
+
+- use ImageDecoder API for GPU-accelerated JPEG decode, extract drawMotionOverlay helper
+
+
 ### v1.16.0 (2026-02-24)
 
 **Type**: MINOR (Server)

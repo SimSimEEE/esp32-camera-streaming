@@ -233,18 +233,26 @@ export const CameraViewer = () => {
         // Extract server-side timestamp if present (first byte != 0xFF → not raw JPEG SOI)
         // Server prepends 8-byte big-endian epoch ms for end-to-end latency measurement
         let frameData: ArrayBuffer;
+        let serverTs: number | null = null;
         const view = new DataView(data);
         if (view.getUint8(0) !== 0xff) {
             const hi = view.getUint32(0, false);
             const lo = view.getUint32(4, false);
-            const serverTs = hi * 0x100000000 + lo;
-            setLatency(Math.round(Date.now() - serverTs));
+            serverTs = hi * 0x100000000 + lo;
             frameData = data.slice(8);
         } else {
-            // Fallback: old server without timestamp — show decode latency
-            setLatency(Math.round(performance.now() - receivedAt));
+            // Fallback: old server without timestamp — measure browser decode+render time
             frameData = data;
         }
+
+        // Called after actual canvas render so latency reflects real display timing
+        const updateLatency = () => {
+            setLatency(
+                serverTs !== null
+                    ? Math.round(Date.now() - serverTs!)  // E2E: server-send → browser-render
+                    : Math.round(performance.now() - receivedAt), // WS-receive → render
+            );
+        };
 
         const canvas = canvasRef.current;
         const ctx = canvas?.getContext("2d") ?? null;
@@ -269,6 +277,7 @@ export const CameraViewer = () => {
                 ctx.drawImage(image, 0, 0);
                 image.close();
                 decoder.close();
+                updateLatency();
 
                 // Draw motion overlay if still valid
                 const overlay = motionOverlayRef.current;
@@ -277,17 +286,15 @@ export const CameraViewer = () => {
                 }
             }).catch(() => {
                 decoder.close();
-                renderViaImage(frameData, canvas, ctx);
+                renderViaImage(frameData, canvas, ctx, updateLatency);
             });
             return;
         }
 
-        // Fallback: Blob → HTMLImageElement → canvas
-        const renderViaImageFallback = () => renderViaImage(frameData, canvas!, ctx!);
-        renderViaImageFallback();
+        renderViaImage(frameData, canvas!, ctx!, updateLatency);
     };
 
-    const renderViaImage = (frameData: ArrayBuffer, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) => {
+    const renderViaImage = (frameData: ArrayBuffer, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, onDraw?: () => void) => {
         const blob = new Blob([frameData], { type: "image/jpeg" });
         const url = URL.createObjectURL(blob);
 
@@ -301,6 +308,7 @@ export const CameraViewer = () => {
 
             ctx.drawImage(img, 0, 0);
             URL.revokeObjectURL(url);
+            onDraw?.();
 
             const overlay = motionOverlayRef.current;
             if (overlay && Date.now() < overlay.expiresAt && overlay.boxes.length > 0) {
