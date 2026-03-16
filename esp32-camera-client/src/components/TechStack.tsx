@@ -34,26 +34,27 @@ interface GradeMeta {
 
 const gradeMeta: Record<Skill["grade"], GradeMeta> = {
     A: {
-        title: "<span class='bg-gradient-to-r from-emerald-400 to-green-300 bg-clip-text text-transparent'>아키텍트/리드</span>",
-        definition: "시스템 <span class='font-bold text-emerald-300'>아키텍처 설계</span>, <span class='font-bold text-emerald-300'>성능 최적화</span>, 고난도 장애 대응 리딩이 가능한 수준입니다.",
+        title: "<span class='bg-gradient-to-r from-emerald-400 to-green-300 bg-clip-text text-transparent'>주도적 기여</span>",
+        definition:
+            "설계부터 구현·운영까지 <span class='font-bold text-emerald-300'>주도적으로 수행</span>하며, 실무 문제를 <span class='font-bold text-emerald-300'>독자적으로 해결</span>한 핵심 역량입니다.",
         chipClassName: "bg-emerald-500/20 text-emerald-300 border border-emerald-400/40",
         accentClassName: "text-emerald-300",
         barClassName: "bg-emerald-400",
         score: 95,
     },
     B: {
-        title: "<span class='bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent'>스페셜리스트/시니어</span>",
+        title: "<span class='bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent'>독립 구현</span>",
         definition:
-            "<span class='font-bold text-blue-300'>복잡한 비즈니스 로직</span>을 독립적으로 구현하고, <span class='font-bold text-blue-300'>베스트 프랙티스</span>를 실무에 적용할 수 있는 수준입니다.",
+            "요구사항을 분석하고 <span class='font-bold text-blue-300'>독립적으로 기능을 구현</span>하며, 실무 프로젝트에서 <span class='font-bold text-blue-300'>반복 적용</span>한 경험이 있습니다.",
         chipClassName: "bg-blue-500/20 text-blue-300 border border-blue-400/40",
         accentClassName: "text-blue-300",
         barClassName: "bg-blue-400",
         score: 75,
     },
     C: {
-        title: "<span class='bg-gradient-to-r from-slate-400 to-gray-300 bg-clip-text text-transparent'>실무형/운영 가능</span>",
+        title: "<span class='bg-gradient-to-r from-slate-400 to-gray-300 bg-clip-text text-transparent'>학습·운영</span>",
         definition:
-            "산업 현장에서 요구되는 <span class='font-bold text-slate-300'>실무 준비 수준</span>으로, 문서와 표준 프로세스를 기반으로 운영 환경 기능 구현 및 유지보수가 가능합니다.",
+            "문서와 레퍼런스를 참고해 <span class='font-bold text-slate-300'>기능 구현 및 유지보수</span>가 가능하며, 실무에서 사용 경험이 있는 수준입니다.",
         chipClassName: "bg-slate-500/20 text-slate-300 border border-slate-400/40",
         accentClassName: "text-slate-300",
         barClassName: "bg-slate-400",
