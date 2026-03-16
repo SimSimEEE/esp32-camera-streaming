@@ -36,6 +36,7 @@ export const CameraViewer = () => {
     const [frameCount, setFrameCount] = useState(0);
     const [resolution, setResolution] = useState({ width: 0, height: 0 });
     const [dataReceived, setDataReceived] = useState(0);
+    const [latency, setLatency] = useState(0);
     const [sensorData, setSensorData] = useState<SensorData[]>([]);
 
     const clientVersion = "1.2.0";
@@ -177,6 +178,7 @@ export const CameraViewer = () => {
     }, [isConnecting, wsConnected]);
 
     const handleImageFrame = (data: ArrayBuffer) => {
+        const receivedAt = performance.now();
         fpsCounterRef.current.count++;
         setFrameCount((prev) => prev + 1);
         setDataReceived((prev) => prev + data.byteLength);
@@ -186,6 +188,7 @@ export const CameraViewer = () => {
 
         const img = new Image();
         img.onload = () => {
+            setLatency(Math.round(performance.now() - receivedAt));
             const canvas = canvasRef.current;
             if (!canvas) return;
 
@@ -419,7 +422,7 @@ export const CameraViewer = () => {
                         </div>
 
                         {/* Stream Stats */}
-                        <div className="grid grid-cols-4 gap-4 p-4 bg-gray-950 border-t border-gray-800">
+                        <div className="grid grid-cols-5 gap-4 p-4 bg-gray-950 border-t border-gray-800">
                             <div className="text-center">
                                 <p className="text-xs text-gray-500 mb-1">Resolution</p>
                                 <p className="text-sm font-semibold text-gray-300">
@@ -431,6 +434,17 @@ export const CameraViewer = () => {
                             <div className="text-center">
                                 <p className="text-xs text-gray-500 mb-1">FPS</p>
                                 <p className="text-sm font-semibold text-green-400">{fps} fps</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-xs text-gray-500 mb-1">Latency</p>
+                                <p className={`text-sm font-semibold ${
+                                    !wsConnected ? "text-gray-600"
+                                    : latency < 30 ? "text-green-400"
+                                    : latency < 80 ? "text-yellow-400"
+                                    : "text-red-400"
+                                }`}>
+                                    {wsConnected ? `${latency} ms` : "-"}
+                                </p>
                             </div>
                             <div className="text-center">
                                 <p className="text-xs text-gray-500 mb-1">Frames</p>
