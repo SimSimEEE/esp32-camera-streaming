@@ -39,7 +39,7 @@ export const CameraViewer = () => {
     const [latency, setLatency] = useState(0);
     const [sensorData, setSensorData] = useState<SensorData[]>([]);
 
-    const clientVersion = "1.2.0";
+    const clientVersion = "1.16.2";
     const [serverVersion, setServerVersion] = useState("-");
     const [firmwareVersion, setFirmwareVersion] = useState("-");
 
