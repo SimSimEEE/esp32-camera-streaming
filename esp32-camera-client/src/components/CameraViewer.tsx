@@ -183,7 +183,23 @@ export const CameraViewer = () => {
         setFrameCount((prev) => prev + 1);
         setDataReceived((prev) => prev + data.byteLength);
 
-        const blob = new Blob([data], { type: "image/jpeg" });
+        // Extract server-side timestamp if present (first byte != 0xFF → not raw JPEG SOI)
+        // Server prepends 8-byte big-endian epoch ms for end-to-end latency measurement
+        let frameData: ArrayBuffer;
+        const view = new DataView(data);
+        if (view.getUint8(0) !== 0xff) {
+            const hi = view.getUint32(0, false);
+            const lo = view.getUint32(4, false);
+            const serverTs = hi * 0x100000000 + lo;
+            setLatency(Math.round(Date.now() - serverTs));
+            frameData = data.slice(8);
+        } else {
+            // Fallback: old server without timestamp — show decode latency
+            setLatency(Math.round(performance.now() - receivedAt));
+            frameData = data;
+        }
+
+        const blob = new Blob([frameData], { type: "image/jpeg" });
         const url = URL.createObjectURL(blob);
 
         const img = new Image();
@@ -436,7 +452,7 @@ export const CameraViewer = () => {
                                 <p className="text-sm font-semibold text-green-400">{fps} fps</p>
                             </div>
                             <div className="text-center">
-                                <p className="text-xs text-gray-500 mb-1">Latency</p>
+                                <p className="text-xs text-gray-500 mb-1">E2E 지연</p>
                                 <p className={`text-sm font-semibold ${
                                     !wsConnected ? "text-gray-600"
                                     : latency < 30 ? "text-green-400"

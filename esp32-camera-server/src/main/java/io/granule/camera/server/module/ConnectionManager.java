@@ -109,21 +109,34 @@ public class ConnectionManager {
     
     /**
      * Broadcast binary data to all web clients
+     * Prepends 8-byte big-endian timestamp (System.currentTimeMillis) for latency measurement
      */
     public final void broadcastToWebClients(final ByteBuffer data) {
-        final byte[] frameData = new byte[data.remaining()];
-        data.get(frameData);
+        final int frameSize = data.remaining();
+        final long now = System.currentTimeMillis();
+
+        // Build stamped frame: [8 bytes timestamp][JPEG data]
+        final byte[] stamped = new byte[8 + frameSize];
+        stamped[0] = (byte)(now >>> 56);
+        stamped[1] = (byte)(now >>> 48);
+        stamped[2] = (byte)(now >>> 40);
+        stamped[3] = (byte)(now >>> 32);
+        stamped[4] = (byte)(now >>> 24);
+        stamped[5] = (byte)(now >>> 16);
+        stamped[6] = (byte)(now >>> 8);
+        stamped[7] = (byte)(now);
+        data.get(stamped, 8, frameSize);
         data.rewind();
-        
+
         for (final WebSocket client : webClients) {
             try {
-                client.send(frameData);
+                client.send(stamped);
             } catch (Exception e) {
                 _log.error("[Connection] Failed to send frame to web client: {}", e.getMessage());
             }
         }
-        
-        _log.debug("[Connection] Broadcasted frame to {} web clients", webClients.size());
+
+        _log.debug("[Connection] Broadcasted stamped frame ({} + 8 bytes) to {} web clients", frameSize, webClients.size());
     }
     
     /**
