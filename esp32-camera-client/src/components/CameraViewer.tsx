@@ -177,6 +177,53 @@ export const CameraViewer = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isConnecting, wsConnected]);
 
+    const drawMotionOverlay = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, overlay: NonNullable<typeof motionOverlayRef.current>) => {
+        ctx.save();
+        try {
+            const color = OVERLAY_COLOR[overlay.changeType] ?? OVERLAY_COLOR.unknown;
+            const scaleX = canvas.width / overlay.frameSize.w;
+            const scaleY = canvas.height / overlay.frameSize.h;
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 6;
+
+            for (const box of overlay.boxes) {
+                const sx = Math.round(box.x * scaleX);
+                const sy = Math.round(box.y * scaleY);
+                const sw = Math.round(box.w * scaleX);
+                const sh = Math.round(box.h * scaleY);
+                ctx.strokeRect(sx, sy, sw, sh);
+            }
+
+            const first = overlay.boxes[0];
+            const lx = Math.round(first.x * scaleX);
+            const ly = Math.round(first.y * scaleY);
+            const label = `${overlay.changeType.toUpperCase()} ${Math.round(overlay.confidence * 100)}%`;
+            const subLabel = `${overlay.motionLevel} ${overlay.changePercentage.toFixed(1)}%`;
+
+            ctx.shadowBlur = 0;
+            ctx.font = "bold 11px monospace";
+            const tw = ctx.measureText(label).width;
+            const badgeH = 32;
+            const badgeTop = ly > badgeH + 2 ? ly - badgeH - 2 : ly + 2;
+
+            ctx.fillStyle = color.replace(", 0.9)", ", 0.75)");
+            ctx.fillRect(lx, badgeTop, tw + 10, badgeH);
+
+            ctx.fillStyle = "#ffffff";
+            ctx.fillText(label, lx + 5, badgeTop + 13);
+            ctx.font = "10px monospace";
+            ctx.fillStyle = "rgba(255,255,255,0.85)";
+            ctx.fillText(subLabel, lx + 5, badgeTop + 26);
+        } catch (e) {
+            console.warn("[Overlay] Draw error:", e);
+        } finally {
+            ctx.restore();
+        }
+    };
+
     const handleImageFrame = (data: ArrayBuffer) => {
         const receivedAt = performance.now();
         fpsCounterRef.current.count++;
@@ -199,18 +246,53 @@ export const CameraViewer = () => {
             frameData = data;
         }
 
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext("2d") ?? null;
+
+        // Use ImageDecoder (Chromium 94+) for faster GPU-accelerated JPEG decode
+        // Falls back to Blob→Image path on unsupported browsers
+        if (typeof (window as unknown as Record<string, unknown>)["ImageDecoder"] === "function" && canvas && ctx) {
+            const stream = new ReadableStream({
+                start(controller) {
+                    controller.enqueue(new Uint8Array(frameData));
+                    controller.close();
+                },
+            });
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const decoder = new (window as any).ImageDecoder({ type: "image/jpeg", data: stream });
+            decoder.decode().then(({ image }: { image: VideoFrame }) => {
+                if (canvas.width !== image.displayWidth || canvas.height !== image.displayHeight) {
+                    canvas.width = image.displayWidth;
+                    canvas.height = image.displayHeight;
+                    setResolution({ width: image.displayWidth, height: image.displayHeight });
+                }
+                ctx.drawImage(image, 0, 0);
+                image.close();
+                decoder.close();
+
+                // Draw motion overlay if still valid
+                const overlay = motionOverlayRef.current;
+                if (overlay && Date.now() < overlay.expiresAt && overlay.boxes.length > 0) {
+                    drawMotionOverlay(ctx, canvas, overlay);
+                }
+            }).catch(() => {
+                decoder.close();
+                renderViaImage(frameData, canvas, ctx);
+            });
+            return;
+        }
+
+        // Fallback: Blob → HTMLImageElement → canvas
+        const renderViaImageFallback = () => renderViaImage(frameData, canvas!, ctx!);
+        renderViaImageFallback();
+    };
+
+    const renderViaImage = (frameData: ArrayBuffer, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) => {
         const blob = new Blob([frameData], { type: "image/jpeg" });
         const url = URL.createObjectURL(blob);
 
         const img = new Image();
         img.onload = () => {
-            setLatency(Math.round(performance.now() - receivedAt));
-            const canvas = canvasRef.current;
-            if (!canvas) return;
-
-            const ctx = canvas.getContext("2d");
-            if (!ctx) return;
-
             if (canvas.width !== img.width || canvas.height !== img.height) {
                 canvas.width = img.width;
                 canvas.height = img.height;
@@ -220,54 +302,9 @@ export const CameraViewer = () => {
             ctx.drawImage(img, 0, 0);
             URL.revokeObjectURL(url);
 
-            // Draw motion overlay if still valid
             const overlay = motionOverlayRef.current;
             if (overlay && Date.now() < overlay.expiresAt && overlay.boxes.length > 0) {
-                ctx.save();
-                try {
-                    const color = OVERLAY_COLOR[overlay.changeType] ?? OVERLAY_COLOR.unknown;
-                    const scaleX = canvas.width / overlay.frameSize.w;
-                    const scaleY = canvas.height / overlay.frameSize.h;
-
-                    ctx.strokeStyle = color;
-                    ctx.lineWidth = 2;
-                    ctx.shadowColor = color;
-                    ctx.shadowBlur = 6;
-
-                    for (const box of overlay.boxes) {
-                        const sx = Math.round(box.x * scaleX);
-                        const sy = Math.round(box.y * scaleY);
-                        const sw = Math.round(box.w * scaleX);
-                        const sh = Math.round(box.h * scaleY);
-                        ctx.strokeRect(sx, sy, sw, sh);
-                    }
-
-                    // Label badge (top-left of first box)
-                    const first = overlay.boxes[0];
-                    const lx = Math.round(first.x * scaleX);
-                    const ly = Math.round(first.y * scaleY);
-                    const label = `${overlay.changeType.toUpperCase()} ${Math.round(overlay.confidence * 100)}%`;
-                    const subLabel = `${overlay.motionLevel} ${overlay.changePercentage.toFixed(1)}%`;
-
-                    ctx.shadowBlur = 0;
-                    ctx.font = "bold 11px monospace";
-                    const tw = ctx.measureText(label).width;
-                    const badgeH = 32;
-                    const badgeTop = ly > badgeH + 2 ? ly - badgeH - 2 : ly + 2;
-
-                    ctx.fillStyle = color.replace(", 0.9)", ", 0.75)");
-                    ctx.fillRect(lx, badgeTop, tw + 10, badgeH);
-
-                    ctx.fillStyle = "#ffffff";
-                    ctx.fillText(label, lx + 5, badgeTop + 13);
-                    ctx.font = "10px monospace";
-                    ctx.fillStyle = "rgba(255,255,255,0.85)";
-                    ctx.fillText(subLabel, lx + 5, badgeTop + 26);
-                } catch (e) {
-                    console.warn("[Overlay] Draw error:", e);
-                } finally {
-                    ctx.restore();
-                }
+                drawMotionOverlay(ctx, canvas, overlay);
             }
         };
 
